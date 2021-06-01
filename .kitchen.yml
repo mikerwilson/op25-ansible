@@ -27,7 +27,7 @@ provisioner:
   playbook: site.yml
   require_ansible_repo: true
   ansible_verbose: true
-  ansible_verbosity: 4
+  ansible_verbosity: 3
   ansible_version: latest
   require_chef_for_busser: false
   # chef_omnibus_url: download_cache/chef_11.16.4-1_amd64.deb
