@@ -1,0 +1,14 @@
+[Unit]
+Description=darkice service
+After=syslog.target nss-lookup.target network-online.target
+
+[Service]
+ExecStart=/usr/bin/darkice -c /etc/darkice1.cfg
+WorkingDirectory=/tmp
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

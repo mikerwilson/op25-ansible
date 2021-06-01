@@ -1,0 +1,58 @@
+---
+driver:
+    name: vagrant
+# This VM Spec emulates a raspberry pi 1 B on my late 2013 MBP
+#     # customize:
+#     #   audio: coreaudio
+#     #   audiocontroller: hda
+#     #   memory: 768
+#     #   cpus: 1
+#     #   cpuexecutioncap: 25
+    customize:
+      audio: alsa
+      audioout: 'on'
+      memory: 2048
+      cpus: 4
+      cpuexecutioncap: 80
+      usb: 'on'
+      usbehci: 'on'
+
+    synced_folders:
+      - ["data/%{instance_name}", "/opt/xfer", "create: true"]
+
+provisioner:
+  name: ansible_playbook
+  roles_path: roles
+  hosts: all
+  playbook: site.yml
+  require_ansible_repo: true
+  ansible_verbose: true
+  ansible_verbosity: 4
+  ansible_version: latest
+  require_chef_for_busser: false
+  # chef_omnibus_url: download_cache/chef_11.16.4-1_amd64.deb
+  extra_vars:
+    redis_server: 172.16.192.10
+    redis_port: 6379
+    use_apt_cacher: False
+    apt_cacher: 127.0.0.1
+    hobbit_server: 127.0.0.1
+    no_autogen_bbhosts: True
+
+platforms:
+- name: ubuntu-21.04
+  driver_config:
+    box: ubuntu/hirsute64
+
+suites:
+- name: scanner
+  provisioner:
+    hosts: scanner
+  driver_config:
+    network:
+      - ["forwarded_port", {guest: 8080, host: 8080, auto_correct: true}]
+      - ["forwarded_port", { guest: 8000, host: 8000, auto_correct: true}]
+      - [ "forwarded_port", { guest: 23456, host: 23456, auto_correct: true } ]
+
+      - ["private_network", {ip: "172.16.192.10"}]
+

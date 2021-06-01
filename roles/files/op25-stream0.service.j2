@@ -1,0 +1,15 @@
+[Unit]
+Description=op25-slpd
+After=syslog.target network.target nss-lookup.target network-online.target darkice1.service
+Requires=network-online.target
+
+[Service]
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/op25/op25/gr-op25_repeater/apps
+ExecStart=/bin/bash -- ./startme-loop.sh
+RestartSec=5
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
