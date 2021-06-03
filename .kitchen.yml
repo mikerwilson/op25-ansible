@@ -9,13 +9,13 @@ driver:
 #     #   cpus: 1
 #     #   cpuexecutioncap: 25
     customize:
-      audio: alsa
-      audioout: 'on'
       memory: 2048
       cpus: 4
       cpuexecutioncap: 80
       usb: 'on'
       usbehci: 'on'
+#      audio: alsa
+#      audioout: 'on'
 
     synced_folders:
       - ["data/%{instance_name}", "/opt/xfer", "create: true"]
@@ -42,7 +42,7 @@ provisioner:
 platforms:
 - name: ubuntu-21.04
   driver_config:
-    box: ubuntu/hirsute64
+    box: bento/ubuntu-21.04
 
 suites:
 - name: scanner
@@ -55,4 +55,10 @@ suites:
       - [ "forwarded_port", { guest: 23456, host: 23456, auto_correct: true } ]
 
       - ["private_network", {ip: "172.16.192.10"}]
+
+- name: foo
+  provisioner:
+    hosts: scanner
+  driver_config:
+    box: bento/ubuntu-21.04
 

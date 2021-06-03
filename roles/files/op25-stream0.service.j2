@@ -6,7 +6,7 @@ Requires=network-online.target
 [Service]
 User=pi
 Group=pi
-WorkingDirectory=/home/pi/op25/op25/gr-op25_repeater/apps
+WorkingDirectory={{ op25_src_dir }}/op25/gr-op25_repeater/apps
 ExecStart=/bin/bash -- ./startme-loop.sh
 RestartSec=5
 Restart=on-failure

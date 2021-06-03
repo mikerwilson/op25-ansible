@@ -5,7 +5,7 @@
 [general]
 
 duration  	= 0 	# 0 means forever
-bufferSecs	= 10
+bufferSecs	= 1
 reconnect  	= yes 	
 
 [input]
@@ -26,23 +26,24 @@ reconnect  	= yes
 # You can verify card and device numbers by running the arecord -l command
 
 device		= loop0	# hw:0,0 then hw:1,0 then hw:2,0 etc
-sampleRate 	= 22050 	
+sampleRate 	= {{ darkice_samplerate }}
 bitsPerSample  	= 16 		
 channel  	= 1 		# 1 for mono, 2 for stereo
 
 [icecast2-0]
 
-bitrateMode  	= cbr 
+bitrateMode = cbr
 format 		= mp3
-bitrate  	= 16 
-quality  	= 0.1   	
+bitrate  	= 96
+quality  	= 1.0
 channel  	= 1 	
-lowpass  	= 4000
-sampleRate  	= 22050
+lowpass  	= -1
+highpass    = -1
+sampleRate  = {{ darkice_samplerate }}
 
-server 		= localhost 	# Your Master Server Name
-port 		= 8000          # 80 or 8080
-password 	= hackme    	# Your Feed Password
-mountPoint 	= raspi         # Your Feed Mount Point (Leave out the "/")
-name 		= scanner       # Your Feed Name
+server 		= {{ darkice_servername }} 	# Your Master Server Name
+port 		= {{ darkice_port }}          # 80 or 8080
+password 	= {{ darkice_pass }}    	# Your Feed Password
+mountPoint 	= {{ darkice_feed_mountpoint }}         # Your Feed Mount Point (Leave out the "/")
+name 		= {{ darkice_feed_name }}       # Your Feed Name
 
