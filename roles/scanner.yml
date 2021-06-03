@@ -20,7 +20,6 @@
     shell: sed -i -- 's/^# *deb-src/deb-src/' /etc/apt/sources.list
 
   # FIXME: Hack because ubuntu default repos are broken.  Fix this
-
   - name: update apt cache
     apt:
       update_cache: yes
@@ -81,6 +80,8 @@
       repo: 'https://github.com/boatbod/op25.git'
       dest: '{{ op25_src_dir }}'
       force: yes
+    notify:
+      - enable and restart op25
 
   # This step HAS to come after the git repo clone (vs before) or the clone will fail
   - name: create op25 build directory
@@ -125,8 +126,8 @@
       - run make install
       - run ldconfig
 
-  - name: Flush handlers
-    meta: flush_handlers
+#  - name: Flush handlers
+#    meta: flush_handlers
 
 # TODO: Notify for op25 service restart
   - name: configure for EBRCS
@@ -139,9 +140,26 @@
       - { src: "ebrcs-trunk.tsv", dest: "trunk.tsv" }
       - { src: "blacklist.tsv", dest: "blacklist.tsv" }
 
-  # TODO: - name: place startup script for op25
+  - name: place startup script for op25
+    ansible.builtin.template:
+      src: "files/op25-loopback.sh"
+      dest: "{{ op25_src_dir }}/op25/gr-op25_repeater/apps/op25-loopback.sh"
+      mode: 0755
+      owner: root
+      group: root
+    notify:
+      - enable and restart op25
 
   # TODO: OP25 service installation
+  - name: install op25 service
+    ansible.builtin.template:
+      src: "files/op25-stream0.service.j2"
+      dest: "/etc/systemd/system/op25.service"
+      owner: root
+      group: root
+      mode: 0644
+    notify:
+      - enable and restart op25
 
   - name: install icecast
     ansible.builtin.package:
@@ -199,9 +217,10 @@
     notify:
       - enable and restart icecast2
 
-
-
   handlers:
+    - name: poke modprobe
+      ansible.builtin.shell: modprobe snd-aloop
+
     - name: run make install
       ansible.builtin.shell: make install
       args:
@@ -209,9 +228,6 @@
 
     - name: run ldconfig
       ansible.builtin.shell: ldconfig
-
-    - name: poke modprobe
-      ansible.builtin.shell: modprobe snd-aloop
 
     - name: enable and restart darkice
       ansible.builtin.service:
@@ -225,4 +241,8 @@
         state: restarted
         enabled: yes
 
-# TODO: Service restart for op25 handler
+    - name: enable and restart op25
+      ansible.builtin.service:
+        name: op25
+        state: restarted
+        enabled: yes

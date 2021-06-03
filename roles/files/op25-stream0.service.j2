@@ -1,13 +1,12 @@
 [Unit]
-Description=op25-slpd
-After=syslog.target network.target nss-lookup.target network-online.target darkice1.service
+Description=op25
+After=syslog.target network.target nss-lookup.target network-online.target darkice.service
 Requires=network-online.target
 
 [Service]
-User=pi
-Group=pi
+User=root
 WorkingDirectory={{ op25_src_dir }}/op25/gr-op25_repeater/apps
-ExecStart=/bin/bash -- ./startme-loop.sh
+ExecStart=/bin/bash -- ./op25-loopback.sh
 RestartSec=5
 Restart=on-failure
 
