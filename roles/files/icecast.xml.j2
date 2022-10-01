@@ -25,22 +25,22 @@
              it also significantly increases latency between the source
              client and listening client.  For low-latency setups, you
              might want to disable this. -->
-        <burst-on-connect>0</burst-on-connect>
+        <burst-on-connect>{{ icecast_burst_on_connect }}</burst-on-connect>
         <!-- same as burst-on-connect, but this allows for being more
              specific on how much to burst. Most people won't need to
              change from the default 64k. Applies to all mountpoints  -->
-        <burst-size>65535</burst-size>
+        <burst-size>{{ icecast_burst_size }}</burst-size>
     </limits>
 
     <authentication>
         <!-- Sources log in with username 'source' -->
-        <source-password>{{ darkice_pass }}</source-password>
+        <source-password>{{ icecast_pass }}</source-password>
         <!-- Relays log in with username 'relay' -->
-        <relay-password>{{ darkice_pass }}</relay-password>
+        <relay-password>{{ icecast_pass }}</relay-password>
 
         <!-- Admin logs in with the username given below -->
-        <admin-user>admin</admin-user>
-        <admin-password>{{ darkice_pass }}</admin-password>
+        <admin-user>{{ icecast_admin_user }}</admin-user>
+        <admin-password>{{ icecast_admin_pass }}</admin-password>
     </authentication>
 
     <!-- set the mountpoint for a shoutcast source to use, the default if not
@@ -65,9 +65,10 @@
 
     <!-- You may have multiple <listen-socket> elements -->
     <listen-socket>
-        <port>{{ darkice_port }}</port>
+        <port>{{ icecast_port }}</port>
         <!-- <bind-address>127.0.0.1</bind-address> -->
         <!-- <shoutcast-mount>/stream</shoutcast-mount> -->
+        <shoutcast-mount>/{{ icecast_mountpoint }}</shoutcast-mount>
     </listen-socket>
     <!--
     <listen-socket>
@@ -186,17 +187,18 @@
         </authentication>
     </mount>
     -->
-
+	<!--
 	<mount type="normal">
 		<mount-name>/raspi.ogg</mount-name>
 		<username>source</username>
-		<password>{{ darkice_pass }}</password>
+		<password>hackme</password>
 		<stream-name>CPD Scanner</stream-name>
 		<stream-description>CPD Channels 1-3</stream-description>
 		<type>application/ogg</type>
 		<subtype>vorbis</subtype>
 		<bitrate>96</bitrate>
 	</mount>
+	-->
 
     <fileserve>1</fileserve>
 

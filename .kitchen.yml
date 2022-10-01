@@ -1,6 +1,6 @@
 ---
-driver:
-    name: vagrant
+#driver:
+#    name: vagrant
 # This VM Spec emulates a raspberry pi 1 B on my late 2013 MBP
 #     # customize:
 #     #   audio: coreaudio
@@ -8,17 +8,20 @@ driver:
 #     #   memory: 768
 #     #   cpus: 1
 #     #   cpuexecutioncap: 25
-    customize:
-      memory: 2048
-      cpus: 4
-      cpuexecutioncap: 80
-      usb: 'on'
-      usbehci: 'on'
+#    customize:
+#      memory: 2048
+#      cpus: 4
+#      cpuexecutioncap: 80
+#      usb: 'on'
+#      usbehci: 'on'
 #      audio: alsa
 #      audioout: 'on'
 
-    synced_folders:
-      - ["data/%{instance_name}", "/opt/xfer", "create: true"]
+#    synced_folders:
+#      - ["data/%{instance_name}", "/opt/xfer", "create: true"]
+
+driver:
+  name: docker
 
 provisioner:
   name: ansible_playbook
@@ -40,25 +43,53 @@ provisioner:
     no_autogen_bbhosts: True
 
 platforms:
-- name: ubuntu-21.04
-  driver_config:
-    box: bento/ubuntu-21.04
+#- name: ubuntu-21.04
+#  driver_config:
+#    box: bento/ubuntu-21.04
+
+#- name: ubuntu-22.04
+#  driver_config:
+#    box: bento/ubuntu-22.04
+
+#  - name: ubuntu-22.04
+#    driver_config:
+#      box: generic/ubuntu2204
+
+#- name: debian-11
+#  driver_config:
+#    box: debian/bullseye64
+
+#  - name: debian-11
+#    driver_config:
+#      image: debian:11
+#      platform: debian
+#
+  - name: ubuntu-bionic
+    driver_config:
+      image: ubuntu:bionic
+      platform: ubuntu
 
 suites:
 - name: scanner
   provisioner:
     hosts: scanner
-  driver_config:
-    network:
-      - ["forwarded_port", {guest: 8080, host: 8080, auto_correct: true}]
-      - ["forwarded_port", { guest: 8000, host: 8000, auto_correct: true}]
-      - [ "forwarded_port", { guest: 23456, host: 23456, auto_correct: true } ]
+    forward:
+      - 8080:8080
+      - 8000:8000
+    # Pre-install command to clear out old apt caches from the base image.
+    #   This was causing builds to fail with "Hash sum mismatch" errors from apt.
+#    custom_pre_install_command: "sudo rm -rf /var/lib/apt/lists/*"
+#  driver_config:
+#    network:
+#      - ["forwarded_port", {guest: 8080, host: 8080, auto_correct: true}]
+#      - ["forwarded_port", { guest: 8000, host: 8000, auto_correct: true}]
+#      - ["forwarded_port", { guest: 23456, host: 23456, auto_correct: true}]
 
-      - ["private_network", {ip: "172.16.192.10"}]
+#      - ["private_network", {ip: "172.16.192.10"}]
 
 - name: foo
   provisioner:
-    hosts: scanner
-  driver_config:
-    box: bento/ubuntu-21.04
+    hosts: all
+#  driver_config:
+#    box: bento/ubuntu-22.04
 
