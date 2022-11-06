@@ -1,13 +1,13 @@
 ---
-#driver:
-#    name: vagrant
-# This VM Spec emulates a raspberry pi 1 B on my late 2013 MBP
-#     # customize:
-#     #   audio: coreaudio
-#     #   audiocontroller: hda
-#     #   memory: 768
-#     #   cpus: 1
-#     #   cpuexecutioncap: 25
+driver:
+    name: vagrant
+      # This VM Spec emulates a raspberry pi 1 B on my late 2013 MBP
+      # customize:
+      #   audio: coreaudio
+      #   audiocontroller: hda
+      #   memory: 768
+      #   cpus: 1
+#   cpuexecutioncap: 25
 #    customize:
 #      memory: 2048
 #      cpus: 4
@@ -17,23 +17,22 @@
 #      audio: alsa
 #      audioout: 'on'
 
-#    synced_folders:
-#      - ["data/%{instance_name}", "/opt/xfer", "create: true"]
+    synced_folders:
+      - ["data/%{instance_name}", "/opt/xfer", "create: true"]
 
-driver:
-  name: docker
+#driver:
+#  name: docker
 
 provisioner:
   name: ansible_playbook
   roles_path: roles
   hosts: all
   playbook: site.yml
-  require_ansible_repo: true
+  require_ansible_repo: false
+  require_ansible_omnibus: true
   ansible_verbose: true
   ansible_verbosity: 3
-  ansible_version: latest
   require_chef_for_busser: false
-  # chef_omnibus_url: download_cache/chef_11.16.4-1_amd64.deb
   extra_vars:
     redis_server: 172.16.192.10
     redis_port: 6379
@@ -43,53 +42,20 @@ provisioner:
     no_autogen_bbhosts: True
 
 platforms:
-#- name: ubuntu-21.04
-#  driver_config:
-#    box: bento/ubuntu-21.04
-
-#- name: ubuntu-22.04
-#  driver_config:
-#    box: bento/ubuntu-22.04
-
-#  - name: ubuntu-22.04
-#    driver_config:
-#      box: generic/ubuntu2204
-
-#- name: debian-11
-#  driver_config:
-#    box: debian/bullseye64
-
-#  - name: debian-11
-#    driver_config:
-#      image: debian:11
-#      platform: debian
-#
-  - name: ubuntu-bionic
-    driver_config:
-      image: ubuntu:bionic
-      platform: ubuntu
+- name: ubuntu-20.04
+  driver_config:
+    box: generic/ubuntu2004
 
 suites:
 - name: scanner
   provisioner:
     hosts: scanner
-    forward:
-      - 8080:8080
-      - 8000:8000
-    # Pre-install command to clear out old apt caches from the base image.
-    #   This was causing builds to fail with "Hash sum mismatch" errors from apt.
-#    custom_pre_install_command: "sudo rm -rf /var/lib/apt/lists/*"
-#  driver_config:
-#    network:
-#      - ["forwarded_port", {guest: 8080, host: 8080, auto_correct: true}]
-#      - ["forwarded_port", { guest: 8000, host: 8000, auto_correct: true}]
-#      - ["forwarded_port", { guest: 23456, host: 23456, auto_correct: true}]
-
+  driver_config:
+    network:
+      - ["forwarded_port", {guest: 8080, host: 8080, auto_correct: false}]
+      - ["forwarded_port", { guest: 8000, host: 8000, auto_correct: false}]
 #      - ["private_network", {ip: "172.16.192.10"}]
 
 - name: foo
   provisioner:
     hosts: all
-#  driver_config:
-#    box: bento/ubuntu-22.04
-

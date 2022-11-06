@@ -59,7 +59,7 @@
       home: '{{ op25_dir }}'
 
   # TODO: Notify op25 service restart
-  # TODO: remove skip
+  # TODO: This changes every run even if the repo doesn't change which causes a follow-on effect.
   - name: clone boatbod's op25 git repo
     ansible.builtin.git:
       repo: 'https://github.com/boatbod/op25.git'
@@ -67,7 +67,6 @@
       force: yes
     notify:
       - recompile op25
-    when: no
 
   - name: build dependencies for gnuradio
     ansible.builtin.package:
@@ -131,6 +130,7 @@
     notify:
       - enable and restart op25
 
+  # TODO: Fix this so user can have custom set of configs.
   - name: configure for EBRCS
     ansible.builtin.copy:
       src: "files/{{item.src}}"
@@ -204,6 +204,8 @@
         cache_valid_time: 0
         update_cache: yes
 
+    # TODO: new stanza--listen on "rebuild op25" and clear out old bits
+
     - name: clear build dir if it exists
       file:
         state: absent
@@ -219,18 +221,21 @@
         - '{{ op25_dir }}/build'
       listen: recompile op25
 
+    # TODO: This runs every time.
     - name: run cmake
       ansible.builtin.shell: cmake ../
       args:
         chdir: "{{ op25_dir }}/build"
       listen: recompile op25
 
+    # TODO: This runs every time.
     - name: run make
       ansible.builtin.shell: make
       args:
         chdir: "{{ op25_dir }}/build"
       listen: recompile op25
 
+    # TODO: This runs every time.
     - name: run make install
       ansible.builtin.shell: make install
       args:
@@ -241,7 +246,7 @@
       ansible.builtin.shell: ldconfig
       args:
         chdir: "{{ op25_dir }}/build"
-      listen: "recompile op25"
+      listen: recompile op25
 
     - name: enable and restart icecast2
       ansible.builtin.service:
@@ -251,10 +256,11 @@
       listen: enable and restart op25
 
     - name: enable and restart op25-rx
-      ansible.builtin.service:
+      ansible.builtin.systemd:
         name: op25-rx
-        state: restarted
         enabled: yes
+        daemon_reload: yes
+        state: restarted
       listen: enable and restart op25
 
     - name: enable and restart liquidsoap
