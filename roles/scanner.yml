@@ -1,4 +1,6 @@
 ---
+# TODO: Write readme.md about the playbook and how it works.
+# TODO: move cpd-specific stuff to .kitchen.local
 - hosts: scanner
   remote_user: root
   vars:
@@ -7,6 +9,7 @@
     op25_root_dir: /opt
     op25_src_dir: /opt/src/op25
     op25_port: 8080
+    op25_configs: /etc/op25
     sysname: OP25
     control_channel_list: "774.45625,773.90625,774.18125,774.73125"
     offset: 0
@@ -61,6 +64,7 @@
       state: directory
     loop:
       - '{{ op25_src_dir }}'
+      - '{{ op25_configs }}'
 
   - name: clone boatbod's op25 git repo to {{ op25_src_dir }}
     ignore_errors: yes
@@ -155,12 +159,26 @@
   - name: configure channels
     ansible.builtin.template:
       src: "{{ item.src }}"
-      dest: "{{ op25_dir }}/op25/gr-op25_repeater/apps/{{ item.dest }}"
+      dest: "{{ op25_configs }}/{{ item.dest }}"
     loop:
       - { src: "{{ channels }}", dest: "channels.tsv" }
       - { src: "files/concordpd.tsv", dest: "whitelist.tsv" }
       - { src: "files/trunk.tsv.j2", dest: "trunk.tsv" }
       - { src: "files/blacklist.tsv", dest: "blacklist.tsv" }
+    notify:
+      - restart op25
+
+  - name: symlink configs
+    ansible.builtin.file:
+      src: "{{ op25_configs }}/{{ item }}"
+      dest: "{{ op25_dir }}/op25/gr-op25_repeater/apps/{{ item }}"
+      state: link
+      force: yes
+    loop:
+      - "channels.tsv"
+      - "whitelist.tsv"
+      - "trunk.tsv"
+      - "blacklist.tsv"
     notify:
       - restart op25
 
