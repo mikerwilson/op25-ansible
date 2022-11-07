@@ -7,6 +7,13 @@
     op25_root_dir: /opt
     op25_src_dir: /opt/src/op25
     op25_port: 8080
+    sysname: OP25
+    control_channel_list: "774.45625,773.90625,774.18125,774.73125"
+    offset: 0
+    NAC: "0x1f5"
+    modulation: cqpsk
+    channels: "files/channels.tsv"
+    center_frequency: "774.45625"
     icecast_servername: localhost
     icecast_port: 8000
     icecast_pass: hackme
@@ -145,15 +152,15 @@
       - restart op25
 
   # TODO: Fix this so user can have custom set of configs.
-  - name: configure for EBRCS
-    ansible.builtin.copy:
-      src: "files/{{item.src}}"
+  - name: configure channels
+    ansible.builtin.template:
+      src: "{{ item.src }}"
       dest: "{{ op25_dir }}/op25/gr-op25_repeater/apps/{{ item.dest }}"
     loop:
-      - { src: "ebrcs.tsv", dest: "ebrcs.tsv" }
-      - { src: "concordpd.tsv", dest: "whitelist.tsv" }
-      - { src: "ebrcs-trunk.tsv", dest: "trunk.tsv" }
-      - { src: "blacklist.tsv", dest: "blacklist.tsv" }
+      - { src: "{{ channels }}", dest: "channels.tsv" }
+      - { src: "files/concordpd.tsv", dest: "whitelist.tsv" }
+      - { src: "files/trunk.tsv.j2", dest: "trunk.tsv" }
+      - { src: "files/blacklist.tsv", dest: "blacklist.tsv" }
     notify:
       - restart op25
 
