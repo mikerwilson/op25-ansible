@@ -67,7 +67,8 @@
       - recompile op25
 
   # Do one initial sync to poppulate the tree.  This is a total hack.
-  #   I couldn't figure out any other way to do this
+  #   I couldn't figure out any other way to do this based on how op25 is structured
+  #   (configs and compiled binaries embedded in the clone
   - name: populate op25 tree for the first time
     ansible.builtin.copy:
       src: "{{ op25_src_dir }}"
@@ -140,7 +141,7 @@
     loop:
       - { src: "op25.sh.j2", dest: "{{ op25_dir }}/op25/gr-op25_repeater/apps/op25.sh" }
     notify:
-      - enable and restart op25
+      - restart op25
 
   # TODO: Fix this so user can have custom set of configs.
   - name: configure for EBRCS
@@ -153,7 +154,7 @@
       - { src: "ebrcs-trunk.tsv", dest: "trunk.tsv" }
       - { src: "blacklist.tsv", dest: "blacklist.tsv" }
     notify:
-      - enable and restart op25
+      - restart op25
 
   - name: install liquidsoap
     ansible.builtin.apt:
@@ -161,7 +162,7 @@
         - liquidsoap
       state: latest
     notify:
-      - enable and restart liquidsoap
+      - restart liquidsoap
 
   # only some distros have this package separately from liquidsoap.  not clean but works.
   - name: install liquidsoap-plugin-all
@@ -171,7 +172,7 @@
       state: latest
     ignore_errors: yes
     notify:
-      - enable and restart liquidsoap
+      - restart liquidsoap
 
   - name: place liquidsoap config
     ansible.builtin.template:
@@ -181,7 +182,7 @@
     loop:
       - { src: "op25.liq.j2", dest: "{{ op25_dir }}/op25/gr-op25_repeater/apps/op25.liq" }
     notify:
-      - enable and restart liquidsoap
+      - restart liquidsoap
 
   - name: install icecast2
     ansible.builtin.apt:
@@ -189,7 +190,7 @@
         - icecast2
       state: latest
     notify:
-      - enable and restart icecast2
+      - restart icecast2
 
   - name: place icecast files
     ansible.builtin.template:
@@ -198,7 +199,7 @@
     loop:
       - { src: "icecast.xml.j2", dest: "/etc/icecast2/icecast.xml" }
     notify:
-      - enable and restart icecast2
+      - restart icecast2
 
   - name: place op25/liquidsoap service files
     ansible.builtin.template:
@@ -208,7 +209,7 @@
       - { src: "op25-liq.service.j2", dest: "op25-liq.service" }
       - { src: "op25-rx.service.j2", dest: "op25-rx.service" }
     notify:
-      - enable and restart op25
+      - restart op25
 
   handlers:
     - name: force update apt cache
@@ -268,6 +269,7 @@
         name: icecast2
         state: restarted
         enabled: yes
+      listen: restart icecast2
 
     - name: enable and restart op25-rx
       ansible.builtin.systemd:
@@ -275,11 +277,13 @@
         enabled: yes
         daemon_reload: yes
         state: restarted
-      listen: enable and restart op25
+      listen: restart op25
 
     - name: enable and restart liquidsoap
       ansible.builtin.service:
         name: op25-liq
         state: restarted
         enabled: yes
-      listen: enable and restart op25
+      listen:
+        - restart op25
+        - restart liquidsoap
