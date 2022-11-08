@@ -1,8 +1,11 @@
 ---
 # TODO: Write readme.md about the playbook and how it works.
 # TODO: move cpd-specific stuff to .kitchen.local
+# TODO: rtl-sdr.rules missing from install -- device not initializing
+# TODO: simplify and just run install.sh (assuming it works after testing)
 - hosts: scanner
-  remote_user: root
+  remote_user: pi
+  become: yes
   vars:
     op25_dir: /opt/op25
     op25_user: op25
@@ -35,7 +38,8 @@
   - name: enable deb-src repo (all debian OSes)
     replace:
       path: /etc/apt/sources.list
-      regexp: '^# (.*deb-src.*)'
+#      regexp: '^# (.*deb-src.*)'
+      regexp: '^#(deb-src.*)'
       replace: '\1'
     notify:
       - force update apt cache
@@ -47,6 +51,11 @@
     apt:
       cache_valid_time: 300
       update_cache: yes
+
+  - name: Update all packages to their latest version
+    ansible.builtin.apt:
+      name: "*"
+      state: latest
 
   - name: install packages
     ansible.builtin.apt:
@@ -128,7 +137,6 @@
       src: "files/op25_python"
       dest: "{{ op25_dir }}/op25/gr-op25_repeater/apps/op25_python"
 
-
   # TODO: May want to notify a reboot?  Requires a reboot to take effect.
   - name: place blacklist-rtl.conf
     ansible.builtin.copy:
@@ -136,6 +144,7 @@
       dest: '/etc/modprobe.d/blacklist-rtl.conf'
       mode: '0644'
       remote_src: yes
+    notify: restart op25
 
   # TODO: make this not a shell command
   - name: fix borked airspy udev rule to allow used of airspy device when running headless
@@ -148,10 +157,13 @@
   - name: place op25.sh
     ansible.builtin.template:
       src: "files/{{ item.src }}"
-      dest: "{{ item.dest }}"
+      dest: "{{ op25_dir }}/op25/gr-op25_repeater/apps/{{ item.dest }}"
       mode: '0755'
+      owner: "{{ op25_user }}"
+      group: "{{ op25_user }}"
     loop:
-      - { src: "op25.sh.j2", dest: "{{ op25_dir }}/op25/gr-op25_repeater/apps/op25.sh" }
+      - { src: "op25.sh.j2", dest: "op25.sh" }
+      - { src: 'meta.json.j2', dest: "meta.json"}
     notify:
       - restart op25
 
@@ -191,7 +203,7 @@
       - restart liquidsoap
 
   # only some distros have this package separately from liquidsoap.  not clean but works.
-  - name: install liquidsoap-plugin-all
+  - name: install liquidsoap-plugin-all (if found in the repo)
     ansible.builtin.apt:
       pkg:
         - liquidsoap-plugin-all
@@ -236,6 +248,16 @@
       - { src: "op25-rx.service.j2", dest: "op25-rx.service" }
     notify:
       - restart op25
+
+  - name: recursively set permissions in {{ op25_dir }}
+    ansible.builtin.file:
+      path: "{{ op25_dir }}"
+      state: directory
+      recurse: yes
+      owner: "{{ op25_user }}"
+      group: "{{ op25_user }}"
+    notify: restart op25
+
 
   handlers:
     - name: force update apt cache
