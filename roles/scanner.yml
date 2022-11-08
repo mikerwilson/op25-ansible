@@ -5,7 +5,7 @@
 # FIXME: simplify and just run install.sh (assuming it works after testing)
 # FIXME: poorly timed restart of op25-rx service before it gets installed
 - hosts: scanner
-  remote_user: op25
+  remote_user: pi
   become: yes
   vars:
     op25_dir: /opt/op25
@@ -103,6 +103,7 @@
       name: '{{ op25_user }}'
       comment: Service account for running op25
       home: '{{ op25_dir }}'
+      groups: "{{ op25_user }},plugdev"
 
   - name: build dependencies for gnuradio
     ansible.builtin.package:
@@ -146,6 +147,13 @@
       mode: '0644'
       remote_src: yes
     notify: restart op25
+
+  - name: place rtl-sdr.rules in /etc/udev/rules.d
+    ansible.builtin.copy:
+      src: 'files/rtl-sdr.rules'
+      dest: '/etc/udev/rules.d/20-rtlsdr.rules'
+      mode: 0644
+    notify: restart udev
 
   # TODO: make this not a shell command
   - name: fix borked airspy udev rule to allow used of airspy device when running headless
@@ -280,6 +288,12 @@
       loop:
         - '{{ op25_dir }}/build'
       listen: recompile op25
+
+    - name: restart udev
+      ansible.builtin.service:
+        name: udev
+        state: restarted
+      when: restart udev
 
     # This is to work around local changes nested in op25 dir
     - name: copy op25 src files into installation directory
