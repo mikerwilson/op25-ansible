@@ -1,8 +1,9 @@
 ---
 # TODO: Write readme.md about the playbook and how it works.
 # TODO: move cpd-specific stuff to .kitchen.local
-# TODO: rtl-sdr.rules missing from install -- device not initializing
-# TODO: simplify and just run install.sh (assuming it works after testing)
+# FIXME: rtl-sdr.rules missing from install -- device not initializing
+# FIXME: simplify and just run install.sh (assuming it works after testing)
+# FIXME: poorly timed restart of op25-rx service before it gets installed
 - hosts: scanner
   remote_user: pi
   become: yes
