@@ -103,7 +103,7 @@
       name: '{{ op25_user }}'
       comment: Service account for running op25
       home: '{{ op25_dir }}'
-      groups: "{{ op25_user }},plugdev"
+      groups: "plugdev"
 
   - name: build dependencies for gnuradio
     ansible.builtin.package:
