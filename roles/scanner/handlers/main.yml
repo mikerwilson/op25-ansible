@@ -80,3 +80,9 @@
   listen:
     - restart op25
     - restart liquidsoap
+
+# We ignore this error for test-kitchen compatibility
+- name: reboot machine
+  ignore_errors: yes
+  ansible.builtin.reboot:
+  listen: reboot

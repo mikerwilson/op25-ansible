@@ -3,8 +3,7 @@
 - name: enable deb-src repo (all debian OSes)
   replace:
     path: /etc/apt/sources.list
-#      regexp: '^# (.*deb-src.*)'
-    regexp: '^#(deb-src.*)'
+    regexp: '^#(deb-src.*| deb-src.*)'
     replace: '\1'
   notify:
     - force update apt cache
@@ -104,12 +103,12 @@
     dest: "{{ op25_dir }}/op25/gr-op25_repeater/apps/op25_python"
 
 # TODO: May want to notify a reboot?  Requires a reboot to take effect.
-- name: place blacklist-rtl.conf
-  ansible.builtin.copy:
-    src: '{{ op25_dir }}/blacklist-rtl.conf'
-    dest: '/etc/modprobe.d/blacklist-rtl.conf'
-    mode: '0644'
-    remote_src: yes
+#- name: place blacklist-rtl.conf
+#  ansible.builtin.copy:
+#    src: '{{ op25_dir }}/blacklist-rtl.conf'
+#    dest: '/etc/modprobe.d/blacklist-rtl.conf'
+#    mode: '0644'
+#    remote_src: yes
 
 - name: place rtl-sdr.rules in /etc/udev/rules.d
   ansible.builtin.copy:
@@ -239,3 +238,11 @@
     owner: "{{ op25_user }}"
     group: "{{ op25_user }}"
   notify: restart op25
+
+- name: place blacklist-rtl.conf
+  ansible.builtin.copy:
+    src: '{{ op25_dir }}/blacklist-rtl.conf'
+    dest: '/etc/modprobe.d/blacklist-rtl.conf'
+    mode: '0644'
+    remote_src: yes
+  notify: reboot
