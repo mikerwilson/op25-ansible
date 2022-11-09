@@ -293,7 +293,7 @@
       ansible.builtin.service:
         name: udev
         state: restarted
-      when: restart udev
+      listen: restart udev
 
     # This is to work around local changes nested in op25 dir
     - name: copy op25 src files into installation directory
