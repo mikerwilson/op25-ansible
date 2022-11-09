@@ -1,7 +1,7 @@
 .kitchen/
 .kitchen.local.yml
 *.swp
-hosts.local
+hosts.local.yml
 .DS_Store
 *~
 data/
