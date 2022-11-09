@@ -1,0 +1,2 @@
+"Sysname"	"Control Channel List"	"Offset"	"NAC"	"Modulation"	"TGID Tags File"	"Whitelist"	"Blacklist"	"Center Frequency"
+"OP25"	"774.45625"	"0"	"0x1f5"	"cqpsk"	"channels.tsv"	"whitelist.tsv"	"blacklist.tsv"	"774.45625"

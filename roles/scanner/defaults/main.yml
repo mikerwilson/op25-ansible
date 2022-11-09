@@ -1,0 +1,25 @@
+---
+op25_dir: /opt/op25
+op25_user: op25
+op25_root_dir: /opt
+op25_src_dir: /opt/src/op25
+op25_port: 8080
+op25_configs: /etc/op25
+sysname: OP25
+control_channel_list: 774.45625,773.90625,774.18125,774.73125
+center_frequency: 774.45625
+offset: 0
+NAC: 0x1f5
+modulation: cqpsk
+icecast_servername: localhost
+icecast_port: 8000
+icecast_pass: hackme
+icecast_admin_user: admin
+icecast_admin_pass: hackmeharder
+icecast_mountpoint: op25
+icecast_feed_name: scanner
+icecast_burst_size: 0
+icecast_burst_on_connect: 0
+liquidsoap_bitrate: 16
+liquidsoap_samplerate: 22050
+liquidsoap_description: op25

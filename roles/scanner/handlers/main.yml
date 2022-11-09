@@ -1,0 +1,82 @@
+---
+- name: force update apt cache
+  ansible.builtin.apt:
+    cache_valid_time: 0
+    update_cache: yes
+
+- name: clear build dir if it exists
+  file:
+    state: absent
+    path: '{{ op25_dir }}/build'
+  listen: recompile op25
+
+- name: create build dir
+  ansible.builtin.file:
+    path: '{{ item }}'
+    recurse: yes
+    state: directory
+  loop:
+    - '{{ op25_dir }}/build'
+  listen: recompile op25
+
+- name: restart udev
+  ansible.builtin.service:
+    name: udev
+    state: restarted
+  listen: restart udev
+
+# This is to work around local changes nested in op25 dir
+- name: copy op25 src files into installation directory
+  ansible.builtin.copy:
+    src: "{{ op25_src_dir }}"
+    dest: "{{ op25_root_dir }}"
+    remote_src: yes
+  listen: recompile op25
+
+- name: run cmake
+  ansible.builtin.shell: cmake ../
+  args:
+    chdir: "{{ op25_dir }}/build"
+  listen: recompile op25
+
+- name: run make
+  ansible.builtin.shell: make
+  args:
+    chdir: "{{ op25_dir }}/build"
+  listen: recompile op25
+
+- name: run make install
+  ansible.builtin.shell: make install
+  args:
+    chdir: "{{ op25_dir }}/build"
+  listen: recompile op25
+
+- name: run ldconfig
+  ansible.builtin.shell: ldconfig
+  args:
+    chdir: "{{ op25_dir }}/build"
+  listen: recompile op25
+
+- name: enable and restart icecast2
+  ansible.builtin.service:
+    name: icecast2
+    state: restarted
+    enabled: yes
+  listen: restart icecast2
+
+- name: enable and restart op25-rx
+  ansible.builtin.systemd:
+    name: op25-rx
+    enabled: yes
+    daemon_reload: yes
+    state: restarted
+  listen: restart op25
+
+- name: enable and restart liquidsoap
+  ansible.builtin.service:
+    name: op25-liq
+    state: restarted
+    enabled: yes
+  listen:
+    - restart op25
+    - restart liquidsoap
