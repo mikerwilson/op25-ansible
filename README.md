@@ -1,5 +1,5 @@
 # What is this thing?
-This repo is an Ansible playbook that will build boatbod's OP25 implementation on a Raspberry Pi 3 B (or better) in a
+This repo is an Ansible playbook that will build [boatbod's OP25](https://github.com/boatbod/op25) implementation on a Raspberry Pi 3 B (or better) in a
 headless/remote configuration.  If you're an advanced Ansible user there are other options for use, hoever this guide
 will not cover those.
 
