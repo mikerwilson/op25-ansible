@@ -3,7 +3,12 @@ This repo is an Ansible playbook that will build [boatbod's OP25](https://github
 headless/remote configuration.  If you're an advanced Ansible user there are other options for use, hoever this guide
 will not cover those.
 
-This guide will help you set up your control machine.  The control machine can be MacOS, Linux, or Windows.
+This guide will help you set up your control machine and build the pi resulting in an audio feed you can listen to with 
+a web browser on your local network.  The control machine can be MacOS, Linux, or Windows.
+
+**NOTE**: This playbook does NOT have security in mind.  Please do not expose your scanner to the internet directly without
+considering the implications and taking steps to protect yourself and your network.
+
 
 # Installation Instructions
 
