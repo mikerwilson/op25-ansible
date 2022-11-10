@@ -125,7 +125,7 @@ This means that subsequent runs are usually quick and are a good way to confirm 
 # Use your scanner!
 Assuming you haven't overridden any of the default variables, the following links should work for you:
 - OP25 control interface: http://radio.local:8080
-- Web-based radio feed: http://radio.local:8000/op25
+- Web-based radio audio feed: http://radio.local:8000/op25
 - Web-based radio feed stats/control: http://radio.local (admin user: admin, pass: hackme)
 
 ## Customize it!
