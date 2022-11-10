@@ -1,0 +1,8 @@
+---
+scanner:
+  hosts:
+    radio.local:
+  vars:
+    sysname: EBRCS OP25 Scanner
+    control_channel_list: 774.45625,773.90625,774.18125,774.73125
+    center_frequency: 774.45625

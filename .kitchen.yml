@@ -1,48 +1,50 @@
 ---
 driver:
     name: vagrant
-# This VM Spec emulates a raspberry pi 1 B on my late 2013 MBP
-#     # customize:
-#     #   audio: coreaudio
-#     #   audiocontroller: hda
-#     #   memory: 768
-#     #   cpus: 1
-#     #   cpuexecutioncap: 25
-    customize:
-      memory: 2048
-      cpus: 4
-      cpuexecutioncap: 80
-      usb: 'on'
-      usbehci: 'on'
+      # This VM Spec emulates a raspberry pi 1 B on my late 2013 MBP
+      # customize:
+      #   audio: coreaudio
+      #   audiocontroller: hda
+      #   memory: 768
+      #   cpus: 1
+#   cpuexecutioncap: 25
+#    customize:
+#      memory: 2048
+#      cpus: 4
+#      cpuexecutioncap: 80
+#      usb: 'on'
+#      usbehci: 'on'
 #      audio: alsa
 #      audioout: 'on'
 
     synced_folders:
       - ["data/%{instance_name}", "/opt/xfer", "create: true"]
 
+#driver:
+#  name: docker
+
 provisioner:
   name: ansible_playbook
   roles_path: roles
   hosts: all
   playbook: site.yml
-  require_ansible_repo: true
+  require_ansible_repo: false
+  require_ansible_omnibus: true
   ansible_verbose: true
   ansible_verbosity: 3
-  ansible_version: latest
   require_chef_for_busser: false
-  # chef_omnibus_url: download_cache/chef_11.16.4-1_amd64.deb
   extra_vars:
-    redis_server: 172.16.192.10
-    redis_port: 6379
-    use_apt_cacher: False
-    apt_cacher: 127.0.0.1
-    hobbit_server: 127.0.0.1
-    no_autogen_bbhosts: True
+    sysname: OP25
+    control_channel_list: "774.45625,773.90625,774.18125,774.73125"
+    offset: 0
+    NAC: "0x1f5"
+    modulation: cqpsk
+    center_frequency: "774.45625"
 
 platforms:
-- name: ubuntu-21.04
+- name: ubuntu-20.04
   driver_config:
-    box: bento/ubuntu-21.04
+    box: generic/ubuntu2004
 
 suites:
 - name: scanner
@@ -50,15 +52,24 @@ suites:
     hosts: scanner
   driver_config:
     network:
-      - ["forwarded_port", {guest: 8080, host: 8080, auto_correct: true}]
-      - ["forwarded_port", { guest: 8000, host: 8000, auto_correct: true}]
-      - [ "forwarded_port", { guest: 23456, host: 23456, auto_correct: true } ]
+      - ["forwarded_port", {guest: 8080, host: 8080, auto_correct: false}]
+      - ["forwarded_port", { guest: 8000, host: 8000, auto_correct: false}]
+#      - ["private_network", {ip: "172.16.192.10"}]
 
-      - ["private_network", {ip: "172.16.192.10"}]
-
-- name: foo
+- name: cpd
   provisioner:
     hosts: scanner
+    extra_vars:
+      sysname: EBRCS CPD Scanner
+      control_channel_list: "774.45625,773.90625,774.18125,774.73125"
+      offset: 0
+      NAC: "0x1f5"
+      modulation: cqpsk
+      center_frequency: "774.45625"
   driver_config:
-    box: bento/ubuntu-21.04
-
+    network:
+      - ["forwarded_port", {guest: 8080, host: 8080, auto_correct: false}]
+      - ["forwarded_port", { guest: 8000, host: 8000, auto_correct: false}]
+- name: foo
+  provisioner:
+    hosts: all
