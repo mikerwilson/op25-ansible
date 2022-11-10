@@ -44,10 +44,8 @@
   ansible.builtin.git:
     repo: 'https://github.com/boatbod/op25.git'
     dest: '{{ op25_src_dir }}'
+    version: '{{ op25_repo_version }}'
     force: yes
-    version: "HEAD"
-    # Older commit to test rolling forward/back
-#      version: "4fb337fd348732196df46ffc5765d07bc408978a"
   notify:
     - recompile op25
 
