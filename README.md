@@ -37,6 +37,7 @@ You'll need the following things:
 1. **Install packages**
     ```shell
     brew update
+    brew install git
     brew install raspberry-pi-imager
     brew install ansible
     ```
