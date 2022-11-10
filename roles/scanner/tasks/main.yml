@@ -100,14 +100,6 @@
     src: "files/op25_python"
     dest: "{{ op25_dir }}/op25/gr-op25_repeater/apps/op25_python"
 
-# TODO: May want to notify a reboot?  Requires a reboot to take effect.
-#- name: place blacklist-rtl.conf
-#  ansible.builtin.copy:
-#    src: '{{ op25_dir }}/blacklist-rtl.conf'
-#    dest: '/etc/modprobe.d/blacklist-rtl.conf'
-#    mode: '0644'
-#    remote_src: yes
-
 - name: place rtl-sdr.rules in /etc/udev/rules.d
   ansible.builtin.copy:
     src: 'files/rtl-sdr.rules'
