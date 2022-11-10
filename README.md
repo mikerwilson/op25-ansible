@@ -36,7 +36,7 @@ You'll need the following things:
     brew install ansible
     ```
 
-2. **Clone repo** - Find a directory you'd like to work from and run `git clone git@github.com:mikerwilson/scanner-ansible.git`
+2. **Clone repo** - Find a directory you'd like to work from and run `git clone git@github.com:mikerwilson/op25-ansible.git`
 
 
 ### 2. Image SD card
