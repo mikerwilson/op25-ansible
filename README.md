@@ -77,9 +77,10 @@ round-trip min/avg/max/stddev = 3.395/3.884/4.860/0.573 ms
 cp hosts.local.yml-example hosts.local.yml
 nano hosts.local.yml
 ```
-Edit the contents of the file with what you'd like to name your scanner, control channel list, and center frequency.
-You can find the frequencies on radioreference.com, but the defaults will at least let the scanner compile.  You can
-change them in this file and rerun the playbook and it will automatically reconfigure the scanner for you.
+Edit the contents of the file with what you'd like to name your scanner (`sysname`), control channel list, and center 
+frequency.  You can find the frequencies on radioreference.com, but the defaults will at least let the scanner build and 
+compile.  You can change them in this file and rerun the playbook and it will automatically reconfigure the scanner for 
+you.
 
 Example:
 ```yaml
