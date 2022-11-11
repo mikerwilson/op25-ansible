@@ -19,19 +19,19 @@ installed it already, go into a terminal window and copy/paste this in there:
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 This guide has been tested on the following configuration:
-1. Raspberry Pi 3 B+
-2. 16GB SanDisk SSD
-3. RTL2832U USB dongle from [RTL-SDR.COM](http://www.rtl-sdr.com) and compatible antenna
-4. Raspberry Pi OS Lite (64-bit) Debian Bullseye (released Sept 22, 2022)
-5. MacOS control machine
+- Raspberry Pi 3 B+ 
+- 16GB SanDisk SSD 
+- RTL2832U USB dongle from [RTL-SDR.COM](http://www.rtl-sdr.com) and compatible antenna 
+- Raspberry Pi OS Lite (64-bit) Debian Bullseye (released Sept 22, 2022)
+- MacOS control machine
 
 ### Before getting started
 You'll need the following things:
-1. Raspberry PI 3 B+ (or better)
-2. RTL-SDR.COM USB dongle (RTL2832U is highly recommended) and compatible antenna
-2. SD card (16gb or more, the faster the better)
-3. SD card reader on the control machine.
-4. SSH key (whatever is already in ~/.ssh is fine)
+- Raspberry PI 3 B+ (or better)
+- RTL-SDR.COM USB dongle (RTL2832U is highly recommended) and compatible antenna 
+- SD card (16gb or more, the faster the better)
+- SD card reader on the control machine. 
+- SSH key (whatever is already in ~/.ssh is fine)
 
 ### Environment Setup
 **Install packages**
@@ -51,11 +51,11 @@ You'll need the following things:
    desktop environment.
 3. Click `Storage` and choose your sd card from the list.
 4. Click `Settings` button (little gear icon) and make the following settings:
-   1. Hostname: `radio`.local (recommend using this name at least the first time around so the instructions match).
-   2. Check `Enable SSH`, and `Allow public-key authenitcation only`, and add your ssh public key.
-   3. Check `Set username and password`, Username: `pi` (don't change this), and Password: `<your secure password>`
-   4. Check `Configure wireless LAN`, SSID, Password, and your `Wireless LAN country`
-   5. (optional but recommended) Check `Set locale settings`, Time Zone, and keyboard layout.
+   - Hostname: `radio`.local (recommend using this name at least the first time around so the instructions match).
+   - Check `Enable SSH`, and `Allow public-key authenitcation only`, and add your ssh public key.
+   - Check `Set username and password`, Username: `pi` (don't change this), and Password: `<your secure password>`
+   - Check `Configure wireless LAN`, SSID, Password, and your `Wireless LAN country`
+   - (optional but recommended) Check `Set locale settings`, Time Zone, and keyboard layout.
 5. Click `SAVE`, then `WRITE`
 
 Once the card is done writing, pop it into your powered-off Raspberry Pi.  Connect your USB RTL-SDR dongle to the Pi,
