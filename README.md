@@ -33,8 +33,8 @@ You'll need the following things:
 3. SD card reader on the control machine.
 4. SSH key (whatever is already in ~/.ssh is fine)
 
-### 1. Environment Setup
-1. **Install packages**
+### Environment Setup
+**Install packages**
     ```shell
     brew update
     brew install git
@@ -42,10 +42,10 @@ You'll need the following things:
     brew install ansible
     ```
 
-2. **Clone repo** - Find a directory you'd like to work from and run `git clone https://github.com/mikerwilson/op25-ansible.git`
+**Clone repo** - Find a directory you'd like to work from and run `git clone https://github.com/mikerwilson/op25-ansible.git`
 
 
-### 2. Image SD card
+### Image SD card
 1. Insert the SD card into your control machine and open the Raspberry Pi Imager.
 2. Click `Operating System` and select `Raspberry Pi OS Lite (64-bit)` (0.3gb) making sure whatever you select has no 
    desktop environment.
@@ -61,7 +61,7 @@ You'll need the following things:
 Once the card is done writing, pop it into your powered-off Raspberry Pi.  Connect your USB RTL-SDR dongle to the Pi,
 then power it on.
 
-### 3. Build the Pi!
+### Build the Pi!
 #### Find the pi
 Give your Pi a few minutes to power on and connect to your wireless network.  Once it's up and ready for you, if you
 ping `radio.local` you should get an IP response like this meaning it's ready to go:
