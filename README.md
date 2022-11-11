@@ -99,9 +99,13 @@ scanner:
     control_channel_list: 774.45625,773.90625,774.18125,774.73125
     center_frequency: 774.45625
 ```
+If you changed the name of your pi to something other than `radio.local` in the Raspberry Pi Imager, replace 
+`radio.local` in the example config with that name.  If name resolution isn't working on your home network you can put
+an IP address in the same place instead.  Just don't forget the trailing `:`!
 
 You can find the full list of variables in the playbook (including usernames and passwords) in the following file:
-`roles/scanner/defaults/main.yml`
+`roles/scanner/defaults/main.yml`.  The vast majority of variables can be set/changed at any time and re-running Ansible
+will make the appropriate changes on your Pi like magic!
 
 #### Run ansible!
 This can take 30+ minutes to complete the first time.  Run this command from the repo root directory.
