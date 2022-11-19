@@ -83,10 +83,10 @@ round-trip min/avg/max/stddev = 3.395/3.884/4.860/0.573 ms
 cp hosts.local.yml-example hosts.local.yml
 nano hosts.local.yml
 ```
-Edit the contents of `hosts.local.yml` with what you'd like to name your scanner (`sysname`), control channel list, and 
-center frequency.  You can find the frequencies on radioreference.com, but the defaults will at least let the scanner 
-build and compile.  You can change them in this file and rerun the playbook and it will automatically reconfigure the 
-scanner for you.
+Edit the contents of `hosts.local.yml` with what you'd like to name your scanner (`sysname`), control channel list, center 
+frequency and NAC (super important!).  You can find the frequencies and NAC on radioreference.com, but the defaults will 
+at least let the scanner build and compile.  You can change them in this file and rerun the playbook and it will automatically 
+reconfigure the scanner for you.
 
 Example:
 ```yaml
@@ -98,6 +98,7 @@ scanner:
     sysname: EBRCS OP25 Scanner
     control_channel_list: 774.45625,773.90625,774.18125,774.73125
     center_frequency: 774.45625
+    NAC: 0x1f5
 ```
 If you changed the name of your pi to something other than `radio.local` in the Raspberry Pi Imager, replace 
 `radio.local` in the example config with that name.  If name resolution isn't working on your home network you can put
