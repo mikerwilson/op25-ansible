@@ -117,39 +117,102 @@
 
 - name: place op25.sh
   ansible.builtin.template:
-    src: "files/{{ item.src }}"
-    dest: "{{ op25_dir }}/op25/gr-op25_repeater/apps/{{ item.dest }}"
+    src: "{{ item }}"
+    dest: "{{ op25_dir }}/op25/gr-op25_repeater/apps/op25.sh"
     mode: '0755'
     owner: "{{ op25_user }}"
     group: "{{ op25_user }}"
-  loop:
-    - { src: "op25.sh.j2", dest: "op25.sh" }
-    - { src: 'meta.json.j2', dest: "meta.json"}
+  with_first_found:
+    - files:
+      - op25.sh
+      - op25.sh.j2
+      paths:
+        - "../../overrides/{{ ansible_hostname }}/"
+        - ../../overrides/
+        - files/
   notify:
     - restart op25
+  tags: configs
 
-- name: place core configurations
+- name: place meta.json
   ansible.builtin.template:
-    src: "files/{{ item.src }}"
-    dest: "{{ op25_configs }}/{{ item.dest }}"
-    force: yes
-  loop:
-    - { src: "channels.tsv", dest: "channels.tsv" }
-    - { src: "trunk.tsv.j2", dest: "trunk.tsv" }
+    src: "{{ item }}"
+    dest: "{{ op25_dir }}/op25/gr-op25_repeater/apps/meta.json"
+    mode: '0755'
+    owner: "{{ op25_user }}"
+    group: "{{ op25_user }}"
+  with_first_found:
+    - files:
+      - meta.json
+      - meta.json.j2
+      paths:
+        - "../../overrides/{{ ansible_hostname }}/"
+        - ../../overrides/
+        - files/
   notify:
     - restart op25
+  tags: configs
 
-- name: place whitelists/blacklists
+- name: place channels.tsv
   ansible.builtin.template:
-    src: "files/{{ item.src }}"
-    dest: "{{ op25_configs }}/{{ item.dest }}"
-    force: no
-  loop:
-    - { src: "whitelist.tsv", dest: "whitelist.tsv" }
-    - { src: "blacklist.tsv", dest: "blacklist.tsv" }
+    src: "{{ item }}"
+    dest: "{{ op25_configs }}/channels.tsv"
+  with_first_found:
+    - files:
+      - "channels.tsv"
+      paths:
+        - "../../overrides/{{ ansible_hostname }}"
+        - ../../overrides
+        - files/
   notify:
     - restart op25
+  tags: configs
 
+- name: place trunk.tsv
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "{{ op25_configs }}/trunk.tsv"
+  with_first_found:
+    - files:
+      - "trunk.tsv"
+      - "trunk.tsv.j2"
+      paths:
+        - "../../overrides/{{ ansible_hostname }}"
+        - ../../overrides
+        - files/
+  notify:
+    - restart op25
+  tags: configs
+
+- name: place whistlist.tsv
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "{{ op25_configs }}/whitelist.tsv"
+  with_first_found:
+    - files:
+      - "whitelist.tsv"
+      paths:
+        - "../../overrides/{{ ansible_hostname }}"
+        - ../../overrides
+        - files/
+  notify:
+    - restart op25
+  tags: configs
+
+- name: place blacklist
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "{{ op25_configs }}/blacklist.tsv"
+  with_first_found:
+    - files:
+      - "blacklist.tsv"
+      paths:
+        - "../../overrides/{{ ansible_hostname }}"
+        - ../../overrides
+        - files/
+  notify:
+    - restart op25
+  tags: configs
 
 - name: symlink configs
   ansible.builtin.file:
@@ -164,6 +227,7 @@
     - "blacklist.tsv"
   notify:
     - restart op25
+  tags: configs
 
 - name: install liquidsoap
   ansible.builtin.apt:
@@ -185,13 +249,20 @@
 
 - name: place liquidsoap config
   ansible.builtin.template:
-    src: "files/{{ item.src }}"
-    dest: "{{ item.dest }}"
+    src: "{{ item }}"
+    dest: "{{ op25_dir }}/op25/gr-op25_repeater/apps/op25.liq"
     mode: '0755'
-  loop:
-    - { src: "op25.liq.j2", dest: "{{ op25_dir }}/op25/gr-op25_repeater/apps/op25.liq" }
+  with_first_found:
+    - files:
+      - "op25.liq"
+      - "op25.liq.j2"
+      paths:
+        - "../../overrides/{{ ansible_hostname }}"
+        - ../../overrides
+        - files/
   notify:
     - restart liquidsoap
+  tags: configs
 
 - name: install icecast2
   ansible.builtin.apt:
@@ -201,14 +272,22 @@
   notify:
     - restart icecast2
 
-- name: place icecast files
+- name: place liquidsoap config
   ansible.builtin.template:
-    src: "files/{{ item.src }}"
-    dest: "{{ item.dest }}"
-  loop:
-    - { src: "icecast.xml.j2", dest: "/etc/icecast2/icecast.xml" }
+    src: "{{ item }}"
+    dest: "/etc/icecast2/icecast.xml"
+  with_first_found:
+    - files:
+      - "icecast.xml"
+      - "icecast.xml.j2"
+      paths:
+        - "../../overrides/{{ ansible_hostname }}"
+        - ../../overrides
+        - files/
   notify:
     - restart icecast2
+  tags: configs
+
 
 - name: place op25/liquidsoap service files
   ansible.builtin.template:
