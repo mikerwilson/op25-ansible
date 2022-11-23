@@ -143,7 +143,8 @@ Assuming you haven't overridden any of the default variables, the following link
 ## Customize it!
 ### Option A: Ansible
 If you change the control channel list or center frequency you can rerun the ansible command to apply those changes.
-This runs in about 30 seconds and is pretty easy.
+This runs in about 30 seconds and is pretty easy.  *Check out the README.md under the overrides directory for some handy
+options.*
 
 ### Option B: SSH
 Radio configs can be found under /etc/op25 and can be edited with any text editor.  You'll need to run 
