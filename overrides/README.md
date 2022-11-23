@@ -13,8 +13,8 @@ This directory is ignored by git except for this file (README.md).
 
 #### The locations of files will be resolved in this order:
 1. overrides/\<ansible hostname>/\<filename>/
-2. overrides/\<filename>
-3. roles/files/\<filename>
+2. overrides/\<filename>/
+3. roles/files/\<filename>/
 
 The intent is for the end user to be able to tweak their OP25 configs.  It is strongly reccommended you use variables 
 whenever possible vs config overrides.
