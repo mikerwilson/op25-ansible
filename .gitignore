@@ -6,3 +6,5 @@ hosts.local.yml
 *~
 data/
 .idea/
+overrides/
+!overrides/README.md
