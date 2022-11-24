@@ -272,7 +272,7 @@
   notify:
     - restart icecast2
 
-- name: place liquidsoap config
+- name: place icecast config
   ansible.builtin.template:
     src: "{{ item }}"
     dest: "/etc/icecast2/icecast.xml"
