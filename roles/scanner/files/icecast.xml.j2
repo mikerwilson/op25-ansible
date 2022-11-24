@@ -154,7 +154,7 @@
 
         <max-listeners>1</max-listeners>
         <dump-file>/tmp/dump-example1.ogg</dump-file>
-        <burst-size>65536</burst-size>
+        <burst-size>{{ icecast_burst_size }}</burst-size>
         <fallback-mount>/example2.ogg</fallback-mount>
         <fallback-override>1</fallback-override>
         <fallback-when-full>1</fallback-when-full>
@@ -192,8 +192,8 @@
 		<mount-name>/raspi.ogg</mount-name>
 		<username>source</username>
 		<password>hackme</password>
-		<stream-name>CPD Scanner</stream-name>
-		<stream-description>CPD Channels 1-3</stream-description>
+		<stream-name>Steam Name</stream-name>
+		<stream-description>Stream Description/stream-description>
 		<type>application/ogg</type>
 		<subtype>vorbis</subtype>
 		<bitrate>96</bitrate>
