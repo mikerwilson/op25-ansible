@@ -79,11 +79,11 @@
     home: '{{ op25_dir }}'
     groups: "plugdev"
 
-#- name: build dependencies for gnuradio
-#  ansible.builtin.package:
-#    name:
-#      - gnuradio
-#    state: build-dep
+- name: build dependencies for gnuradio
+  ansible.builtin.package:
+    name:
+      - gnuradio
+    state: build-dep
 
 - name: install gnuradio and dependencies
   ansible.builtin.package:
