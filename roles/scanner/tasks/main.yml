@@ -201,7 +201,7 @@
     - restart op25
   tags: configs
 
-- name: place whistlist.tsv
+- name: place whitelist.tsv
   ansible.builtin.template:
     src: "{{ item }}"
     dest: "{{ op25_configs }}/whitelist.tsv"
