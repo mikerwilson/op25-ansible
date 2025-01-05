@@ -54,4 +54,16 @@ input = normalize(input, gain_max = 6.0, gain_min = -6.0, target = -16.0, thresh
 # Change the "host", "password", and "mount" strings appropriately first!
 # For metadata to work properly, the host address given here MUST MATCH the address in op25's meta.json file
 #
-output.icecast(%mp3(bitrate={{ liquidsoap_bitrate }}, samplerate={{ liquidsoap_samplerate }}, stereo=false), description="{{ liquidsoap_description }}", genre="Public Safety", url="", fallible=false, icy_metadata="false", host="localhost", port={{ icecast_port }}, mount="{{ icecast_mountpoint }}", password="{{ icecast_pass }}", mean(input))
+output.icecast(%mp3(bitrate={{ liquidsoap_bitrate }},
+samplerate={{ liquidsoap_samplerate }},
+stereo=false),
+description="{{ liquidsoap_description }}",
+genre="Public Safety",
+url="",
+fallible=false,
+#icy_metadata="false",
+host="localhost",
+port={{ icecast_port }},
+mount="{{ icecast_mountpoint }}",
+password="{{ icecast_pass }}",
+mean(input))
