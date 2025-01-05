@@ -95,11 +95,16 @@ scanner:
   hosts:
     radio.local:
   vars:
+    ansible_user: pi
     sysname: EBRCS OP25 Scanner
     control_channel_list: 774.45625,773.90625,774.18125,774.73125
     center_frequency: 774.45625
     NAC: 0x1f5
 ```
+**NOTE**: If you are not running this on an OS intended to run on a Raspberry pi, you will likely need to change the 
+`ansible_user` variable to something like `ubuntu`.  The reason for this is the `pi` user won't exist on any
+non-pi OSes by default.
+
 If you changed the name of your pi to something other than `radio.local` in the Raspberry Pi Imager, replace 
 `radio.local` in the example config with that name.  If name resolution isn't working on your home network you can put
 an IP address in the same place instead.  Just don't forget the trailing `:`!
@@ -113,6 +118,8 @@ This can take 30+ minutes to complete the first time.  Run this command from the
 ```shell
 ansible-playbook -i hosts.local.yml site.yml
 ```
+Alternately, you can run the script `run-playbook.sh` in the root of the repo to run the playbook.
+
 
 The Pi will reboot at the end of the initial run.  The output should look something like this:
 ```text

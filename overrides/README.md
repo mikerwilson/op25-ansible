@@ -21,3 +21,5 @@ whenever possible vs config overrides.
 
 **PROTIP**: To run the ansible playbook and limit the run to config-related tasks for far improved speed:
 `ansible-playbook -t configs -i hosts.local.yml site.yml` (from the root of this repo)
+
+Alternately, you can run `./update-configs.sh` in the root of the repo to do the same thing.
