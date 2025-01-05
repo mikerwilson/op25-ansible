@@ -1,4 +1,17 @@
 ---
+# Ubuntu repo update
+- name: enable deb-src on Ubuntu 24.04 LTS and later
+    # "sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources"
+  ansible.builtin.lineinfile:
+    path: /etc/apt/sources.list.d/ubuntu.sources
+    regexp: '^Types:\s*deb(\s+.*)?$'
+    line: 'Types: deb deb-src'
+    backrefs: yes
+  notify:
+    - force update apt cache
+  when:
+    ansible_facts['distribution'] == "Ubuntu" and ansible_facts['distribution_version'] | int >= 24
+
 # Enable sources for debian repos
 - name: enable deb-src repo (all debian OSes)
   replace:
@@ -66,11 +79,11 @@
     home: '{{ op25_dir }}'
     groups: "plugdev"
 
-- name: build dependencies for gnuradio
-  ansible.builtin.package:
-    name:
-      - gnuradio
-    state: build-dep
+#- name: build dependencies for gnuradio
+#  ansible.builtin.package:
+#    name:
+#      - gnuradio
+#    state: build-dep
 
 - name: install gnuradio and dependencies
   ansible.builtin.package:
