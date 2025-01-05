@@ -2,11 +2,10 @@
 # Ubuntu repo update
 - name: enable deb-src on Ubuntu 24.04 LTS and later
     # "sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources"
-  ansible.builtin.lineinfile:
+  ansible.builtin.replace:
     path: /etc/apt/sources.list.d/ubuntu.sources
-    regexp: '^Types:\s*deb(\s+.*)?$'
-    line: 'Types: deb deb-src'
-    backrefs: yes
+    regexp: '^\s*Types:\s*deb\s*$'
+    replace: 'Types: deb deb-src'
   notify:
     - force update apt cache
   when:
@@ -106,6 +105,11 @@
       - python3-waitress
       - python3-requests
       - gnuplot-x11
+      - clang-format
+      - git
+      - libsndfile1-dev
+      - libspdlog-dev
+      - python3-pybind11
     state: latest
 
 - name: "Place op25_python file in {{ op25_dir }}/op25/gr-op25_repeater/apps"
