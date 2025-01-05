@@ -1,7 +1,214 @@
 ---
-- hosts: scanner
-  remote_user: pi
+- name: Install and configure OP25 with Icecast2 on Raspberry Pi or Ubuntu 24.04 LTS
+  hosts: all
   become: yes
-  gather_facts: yes
-  roles:
-    - scanner
+  vars:
+    op25_repo: "https://github.com/boatbod/op25.git"
+    op25_install_dir: "/opt/op25"
+    op25_user: "op25"
+    icecast_password: "changeme123"  # Replace with a secure password
+    rtl_sdr_device: "0"
+    icecast_mount: "/op25"
+    stream_url: "localhost"
+    stream_port: "8000"
+    ebrcs_control_channels:
+      - "774.45625"
+      - "773.90625"
+      - "774.18125"
+      - "774.73125"
+    ebrcs_whitelist_talkgroups:
+      - { tgid: "7155", name: "Concord PD Channel 1" }
+      - { tgid: "7169", name: "Concord PD Channel 2" }
+      - { tgid: "7170", name: "Concord PD Channel 3" }
+      - { tgid: "7173", name: "Walnut Creek PD" }
+      - { tgid: "7172", name: "Pleasant Hill PD" }
+      - { tgid: "7175", name: "Pittsburg PD" }
+      - { tgid: "40101", name: "CHP Golden Gate" }
+      - { tgid: "7176", name: "Contra Costa Sheriff East" }
+      - { tgid: "7177", name: "Contra Costa Sheriff Central" }
+  tasks:
+    - name: Ensure system packages are up to date
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Create non-privileged user for OP25
+      user:
+        name: "{{ op25_user }}"
+        shell: /bin/bash
+        create_home: yes
+
+    - name: Install dependencies for OP25 and Icecast2
+      apt:
+        name:
+          - git
+          - build-essential
+          - cmake
+          - python3
+          - python3-pip
+          - python3-venv
+          - rtl-sdr
+          - libfftw3-dev
+          - libasound2-dev
+          - libice-dev
+          - libvorbis-dev
+          - libshout3-dev
+          - gnuradio
+          - gnuradio-dev
+          - gr-osmosdr
+          - librtlsdr-dev
+          - libuhd-dev
+          - libhackrf-dev
+          - libitpp-dev
+          - libpcap-dev
+          - liborc-dev
+          - pkg-config
+          - doxygen
+          - clang-format
+          - python3-pybind11
+          - python3-numpy
+          - python3-waitress
+          - python3-requests
+          - gnuplot-x11
+          - libsndfile1-dev
+          - libspdlog-dev
+        state: present
+
+    - name: Ensure OP25 directory has correct ownership
+      file:
+        path: "{{ op25_install_dir }}"
+        state: directory
+        owner: "{{ op25_user }}"
+        group: "{{ op25_user }}"
+        recurse: yes
+
+    - name: Configure Git to recognize /opt/op25 as a safe directory
+      shell: |
+        git config --global --add safe.directory {{ op25_install_dir }}
+      become_user: "{{ op25_user }}"
+
+    - name: Clone or update OP25 repository
+      git:
+        repo: "{{ op25_repo }}"
+        dest: "{{ op25_install_dir }}"
+        update: yes
+        version: gr310
+      become_user: "{{ op25_user }}"
+      notify:
+        - Build OP25
+
+    - name: Ensure build directory exists and set correct permissions
+      file:
+        path: "{{ op25_install_dir }}/build"
+        state: directory
+        owner: "{{ op25_user }}"
+        group: "{{ op25_user }}"
+        mode: '0755'
+
+    - name: Build OP25
+      shell: |
+        cd {{ op25_install_dir }}/build
+        cmake ..
+        make
+      args:
+        chdir: "{{ op25_install_dir }}"
+      become_user: "{{ op25_user }}"
+      notify: Restart OP25
+
+    - name: Install OP25
+      shell: |
+        cd {{ op25_install_dir }}/build
+        make install
+        ldconfig
+      args:
+        chdir: "{{ op25_install_dir }}"
+
+    - name: Create virtual environment for OP25
+      command:
+        cmd: "python3 -m venv {{ op25_install_dir }}/venv"
+      args:
+        creates: "{{ op25_install_dir }}/venv/bin/activate"
+      become_user: "{{ op25_user }}"
+
+    - name: Check if requirements.txt exists
+      stat:
+        path: "{{ op25_install_dir }}/requirements.txt"
+      register: requirements_file
+
+    - name: Install Python requirements for OP25 in virtual environment
+      command: "{{ op25_install_dir }}/venv/bin/pip install --break-system-packages -r {{ op25_install_dir }}/requirements.txt"
+      args:
+        chdir: "{{ op25_install_dir }}"
+      become_user: "{{ op25_user }}"
+      when: requirements_file.stat.exists
+
+    - name: Install and configure Icecast2
+      apt:
+        name: icecast2
+        state: present
+
+    - name: Configure Icecast2
+      template:
+        src: "templates/icecast2.xml.j2"
+        dest: /etc/icecast2/icecast.xml
+        owner: root
+        group: root
+        mode: '0640'
+      notify: Restart Icecast2
+
+    - name: Deploy OP25 configuration for EBRCS
+      template:
+        src: templates/op25.json.j2
+        dest: "{{ op25_install_dir }}/op25.json"
+        owner: "{{ op25_user }}"
+        group: "{{ op25_user }}"
+        mode: '0644'
+
+    - name: Check if OP25 systemd service is already configured
+      stat:
+        path: /etc/systemd/system/op25.service
+      register: op25_service_config
+
+    - name: Create systemd service for OP25
+      copy:
+        dest: /etc/systemd/system/op25.service
+        content: |
+          [Unit]
+          Description=OP25 Streaming Service
+          After=network.target
+
+          [Service]
+          User={{ op25_user }}
+          WorkingDirectory={{ op25_install_dir }}/op25/gr-op25_repeater/apps
+          ExecStart={{ op25_install_dir }}/venv/bin/python3 {{ op25_install_dir }}/op25/gr-op25_repeater/apps/multi_rx.py --args 'rtl' --gains 'lna:36' -T {{ op25_install_dir }}/op25.json -l http:{{ stream_url }}:{{ stream_port }}{{ icecast_mount }} --nocurses >> /var/log/op25.log 2>&1
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+      notify:
+        - Reload Systemd
+        - Restart OP25
+
+    - name: Reload systemd to recognize the new service
+      command: systemctl daemon-reload
+      notify: Restart OP25
+
+    - name: Enable and start OP25 service
+      systemd:
+        name: op25
+        enabled: yes
+        state: started
+
+  handlers:
+    - name: Reload Systemd
+      command: systemctl daemon-reload
+
+    - name: Restart Icecast2
+      systemd:
+        name: icecast2
+        state: restarted
+
+    - name: Restart OP25
+      systemd:
+        name: op25
+        state: restarted
