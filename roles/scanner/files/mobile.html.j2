@@ -177,7 +177,7 @@
             <h2>Whitelisted TGIDs</h2>
             {% for tgid, name in whitelisted_tgids.items() %}
             <div>
-                <a href="#" onclick="setTGIDAndListen('{{ tgid }}')">{{ name }} (TGID: {{ tgid }})</a>
+                <a href="#" onclick="setTGIDAndListen('{{ tgid }}')">{{ name }} ({{ tgid }})</a>
             </div>
             {% endfor %}
             <button class="scan-button" onclick="setTGIDAndListen('0')">Scan</button>
@@ -188,7 +188,7 @@
             <h2>All Talkgroups</h2>
             {% for tgid, name in channels.items() %}
             <div class="tgid-entry">
-                <a href="#" onclick="setTGIDAndListen('{{ tgid }}')">{{ name }} (TGID: {{ tgid }})</a>
+                <a href="#" onclick="setTGIDAndListen('{{ tgid }}')">{{ name }} ({{ tgid }})</a>
             </div>
             {% endfor %}
         </div>
