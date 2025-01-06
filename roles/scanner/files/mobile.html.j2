@@ -25,8 +25,12 @@
         }
         .iframe-container {
             width: 100%;
-            height: 250px; /* Reduced by 50% */
+            height: 250px;
             margin-bottom: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: #121212;
         }
         .iframe-container iframe {
             width: 100%;
@@ -46,12 +50,12 @@
             font-size: 18px;
         }
         .button {
-            padding: 10px 20px;
+            padding: 12px 24px;
             background-color: #28a745;
             color: #ffffff;
             border: none;
             border-radius: 5px;
-            font-size: 18px;
+            font-size: 24px;
             cursor: pointer;
         }
         .button.playing {
@@ -60,67 +64,50 @@
         .button:hover {
             opacity: 0.9;
         }
-        .whitelisted-tgids {
+        .section {
             background-color: #1e1e1e;
             padding: 20px;
             border-radius: 5px;
             border: 1px solid #333;
             overflow-y: auto;
         }
-        .whitelisted-tgids h2 {
+        .section h2 {
             margin-top: 0;
+            font-size: 18px;
         }
-        .whitelisted-tgids div {
+        .section div {
             margin-bottom: 15px;
         }
-        .whitelisted-tgids a {
+        .section button {
             display: block;
+            width: 100%;
             background-color: #007bff;
             color: #fff;
             padding: 15px;
             border-radius: 5px;
             text-align: center;
-            text-decoration: none;
-            font-size: 18px;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
         }
-        .whitelisted-tgids a:hover {
+        .section button:hover {
             background-color: #0056b3;
         }
         .scan-button {
             display: block;
-            margin: 20px auto 0;
+            margin: 20px auto;
             background-color: #28a745;
             color: #fff;
             border: none;
             padding: 15px 20px;
             border-radius: 5px;
-            font-size: 18px;
+            font-size: 20px;
             cursor: pointer;
             text-align: center;
             width: 100%;
         }
         .scan-button:hover {
             background-color: #218838;
-        }
-        .tgid-list {
-            background-color: #1e1e1e;
-            padding: 20px;
-            border-radius: 5px;
-            border: 1px solid #333;
-        }
-        .tgid-entry a {
-            display: block;
-            background-color: #007bff;
-            color: #fff;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-            text-decoration: none;
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-        .tgid-entry a:hover {
-            background-color: #0056b3;
         }
         .toggle-button {
             position: fixed;
@@ -129,9 +116,9 @@
             background-color: #007bff;
             color: #fff;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 20px;
             cursor: pointer;
             z-index: 1000;
         }
@@ -142,14 +129,14 @@
             background-color: #ffffff;
             color: #000000;
         }
-        .light-mode .iframe-container, .light-mode .whitelisted-tgids, .light-mode .tgid-list, .light-mode .audio-player {
+        .light-mode .iframe-container, .light-mode .section, .light-mode .audio-player, .light-mode .content, .light-mode .grid-layout {
             background-color: #f9f9f9;
             border-color: #ccc;
         }
-        .light-mode a {
+        .light-mode button {
             color: #ffffff;
         }
-        .light-mode a:hover {
+        .light-mode button:hover {
             color: #dddddd;
         }
         .light-mode .scan-button {
@@ -166,10 +153,58 @@
         .light-mode .toggle-button:hover {
             background-color: #0056b3;
         }
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .collapsible {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 18px;
+            outline: none;
+            transition: background-color 0.3s;
+        }
+        .collapsible:hover {
+            background-color: #0056b3;
+        }
+        .content {
+            padding: 0 20px;
+            display: none;
+            overflow: hidden;
+            background-color: #1e1e1e;
+            border-radius: 5px;
+            border: 1px solid #333;
+            margin-top: 5px;
+        }
+        .content .grid-layout {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            justify-items: center;
+        }
+        .content button {
+            width: 90%;
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .content button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
-    <button class="toggle-button" onclick="toggleTheme()">Toggle Day/Night Mode</button>
+    <button class="toggle-button" onclick="toggleTheme()">Day/Night Mode</button>
     <div class="container">
         <!-- Iframe Section -->
         <div class="iframe-container">
@@ -184,25 +219,44 @@
             <audio id="liveAudio" style="display:none;"></audio>
         </div>
 
-        <!-- Whitelisted TGIDs Section -->
-        <div class="whitelisted-tgids">
-            <h2>Whitelisted TGIDs</h2>
-            {% for tgid, name in whitelisted_tgids.items() %}
-            <div>
-                <a href="#" onclick="setTGIDAndListen('{{ tgid }}')">{{ name }} ({{ tgid }})</a>
+        <!-- Scan Button -->
+        <button class="scan-button" onclick="setTGIDAndListen('0')">Scan</button>
+        <div class="grid-layout">
+            <!-- Favorites Section -->
+            {% if favorites_tgids | default({}) %}
+            <div class="section">
+                <h2>Favorites</h2>
+                {% for tgid, name in favorites_tgids.items() %}
+                <div>
+                    <button onclick="setTGIDAndListen('{{ tgid }}')">{{ name }} ({{ tgid }})</button>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-            <button class="scan-button" onclick="setTGIDAndListen('0')">Scan</button>
+            {% endif %}
+
+            <!-- Whitelisted TGIDs Section -->
+            {% if whitelisted_tgids | default({}) %}
+            <div class="section">
+                <h2>Scan List</h2>
+                {% for tgid, name in whitelisted_tgids.items() %}
+                <div>
+                    <button onclick="setTGIDAndListen('{{ tgid }}')">{{ name }} ({{ tgid }})</button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
 
         <!-- All Talkgroups Section -->
-        <div class="tgid-list">
-            <h2>All Talkgroups</h2>
-            {% for tgid, name in channels.items() %}
-            <div class="tgid-entry">
-                <a href="#" onclick="setTGIDAndListen('{{ tgid }}')">{{ name }} ({{ tgid }})</a>
+        <button class="collapsible">All Talkgroups</button>
+        <div class="content">
+            <div class="grid-layout">
+                {% for tgid, name in channels.items() %}
+                <div class="tgid-entry">
+                    <button onclick="setTGIDAndListen('{{ tgid }}')">{{ name }} ({{ tgid }})</button>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
     </div>
 
@@ -288,6 +342,15 @@
         } else {
             document.body.classList.add('light-mode');
         }
+
+        // Collapsible Section Logic
+        const collapsible = document.querySelector('.collapsible');
+        const content = document.querySelector('.content');
+
+        collapsible.addEventListener('click', function() {
+            this.classList.toggle('active');
+            content.style.display = content.style.display === 'block' ? 'none' : 'block';
+        });
     </script>
 </body>
 </html>
