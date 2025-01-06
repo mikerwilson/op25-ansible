@@ -176,14 +176,21 @@
     dest: "{{ op25_configs }}/channels.tsv"
   with_first_found:
     - files:
-      - "channels.tsv"
+      - "channels.tsv.j2"
       paths:
         - "../../overrides/{{ ansible_hostname }}"
         - ../../overrides
         - files/
   notify:
     - restart op25
+  when: channels is defined
   tags: configs
+
+- name: Copy default channels.tsv if channels var is not defined
+  copy:
+    src: "files/channels.tsv"
+    dest: "{{ op25_configs }}/channels.tsv"
+  when: whitelisted_tgids is not defined
 
 - name: place trunk.tsv
   ansible.builtin.template:
@@ -207,13 +214,21 @@
     dest: "{{ op25_configs }}/whitelist.tsv"
   with_first_found:
     - files:
-      - "whitelist.tsv"
+      - "whitelist.tsv.j2"
       paths:
         - "../../overrides/{{ ansible_hostname }}"
         - ../../overrides
         - files/
   notify:
     - restart op25
+  when: whitelisted_tgids is defined
+  tags: configs
+
+- name: Create a blank whitelist.tsv if whitelisted_tgids is not defined
+  copy:
+    content: ""
+    dest: /path/to/whitelist.tsv
+  when: whitelisted_tgids is not defined
   tags: configs
 
 - name: place blacklist
@@ -222,13 +237,14 @@
     dest: "{{ op25_configs }}/blacklist.tsv"
   with_first_found:
     - files:
-      - "blacklist.tsv"
+      - "blacklist.tsv.j2"
       paths:
         - "../../overrides/{{ ansible_hostname }}"
         - ../../overrides
         - files/
   notify:
     - restart op25
+  when: blacklisted_tgids is defined
   tags: configs
 
 - name: symlink configs
@@ -332,3 +348,12 @@
     mode: '0644'
     remote_src: yes
   notify: reboot
+
+- name: place mobile.html
+  ansible.builtin.template:
+    src: "files/mobile.html.j2"
+    dest: "{{ op25_dir }}/op25/gr-op25_repeater/www/www-static/mobile.html"
+    owner: "{{ op25_user }}"
+    group: "{{ op25_user }}"
+    mode: '0644'
+  tags: configs

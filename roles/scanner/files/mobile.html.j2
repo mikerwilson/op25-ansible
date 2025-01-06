@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OP25 Channel Control</title>
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <script src="main.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        a, .scan-button {
+            color: #ffffff;
+        }
+        a:hover {
+            color: #dddddd;
+        }
+        .container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .iframe-container, .audio-player {
+            background-color: #1e1e1e;
+            border-radius: 5px;
+            border: 1px solid #333;
+            padding: 20px;
+        }
+        iframe {
+            width: 100%;
+            height: 310px;
+            border: none;
+        }
+        .audio-player audio {
+            width: 100%;
+            background-color: transparent;
+        }
+        .whitelisted-tgids {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            overflow-y: auto;
+        }
+        .whitelisted-tgids h2 {
+            margin-top: 0;
+        }
+        .whitelisted-tgids div {
+            margin-bottom: 15px;
+        }
+        .whitelisted-tgids a {
+            display: block;
+            background-color: #007bff;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        .whitelisted-tgids a:hover {
+            background-color: #0056b3;
+        }
+        .scan-button {
+            display: block;
+            margin: 20px auto 0;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+        }
+        .scan-button:hover {
+            background-color: #218838;
+        }
+        .tgid-list {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #333;
+        }
+        .tgid-entry a {
+            display: block;
+            background-color: #007bff;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .tgid-entry a:hover {
+            background-color: #0056b3;
+        }
+        .toggle-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        .toggle-button:hover {
+            background-color: #0056b3;
+        }
+        .light-mode {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .light-mode .iframe-container, .light-mode .whitelisted-tgids, .light-mode .tgid-list {
+            background-color: #f9f9f9;
+            border-color: #ccc;
+        }
+        .light-mode a {
+            color: #ffffff;
+        }
+        .light-mode a:hover {
+            color: #dddddd;
+        }
+        .light-mode .scan-button {
+            background-color: #28a745;
+            color: #ffffff !important;
+        }
+        .light-mode .scan-button:hover {
+            background-color: #218838;
+        }
+        .light-mode .toggle-button {
+            background-color: #007bff;
+            color: #fff;
+        }
+        .light-mode .toggle-button:hover {
+            background-color: #0056b3;
+        }
+        .light-mode .audio-player audio {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <button class="toggle-button" onclick="toggleTheme()">Toggle Day/Night Mode</button>
+    <div class="container">
+        <!-- Iframe Section -->
+        <div class="iframe-container">
+            <iframe src="{{ iframe_target }}" id="op25-iframe"></iframe>
+        </div>
+
+        <!-- Audio Player Section -->
+        <div class="audio-player">
+            <h2>Live Audio Stream</h2>
+            <audio id="live-audio" controls preload="auto">
+                <source src="http://{{ audio_stream }}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+
+        <!-- Whitelisted TGIDs Section -->
+        <div class="whitelisted-tgids">
+            <h2>Whitelisted TGIDs</h2>
+            {% for tgid, name in whitelisted_tgids.items() %}
+            <div>
+                <a href="#" onclick="setTGIDAndListen('{{ tgid }}')">{{ name }} (TGID: {{ tgid }})</a>
+            </div>
+            {% endfor %}
+            <button class="scan-button" onclick="setTGIDAndListen('0')">Scan</button>
+        </div>
+
+        <!-- All Talkgroups Section -->
+        <div class="tgid-list">
+            <h2>All Talkgroups</h2>
+            {% for tgid, name in channels.items() %}
+            <div class="tgid-entry">
+                <a href="#" onclick="setTGIDAndListen('{{ tgid }}')">{{ name }} (TGID: {{ tgid }})</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        function setTGIDAndListen(tgid) {
+            const originalPrompt = window.prompt;
+            window.prompt = function() { return tgid; };
+            f_scan_button('goto');
+            window.prompt = originalPrompt;
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+        }
+
+        // Automatically set theme based on system preference
+        const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+        if (prefersDarkScheme.matches) {
+            document.body.classList.remove('light-mode');
+        } else {
+            document.body.classList.add('light-mode');
+        }
+    </script>
+</body>
+</html>
