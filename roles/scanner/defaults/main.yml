@@ -28,7 +28,7 @@ liquidsoap_bitrate: 16
 liquidsoap_samplerate: 22050
 liquidsoap_description: op25
 iframe_target: "http://{{op25_servername}}:{{op25_port}}/"
-audio_stream: "{{icecast_servername}}:{{icecast_port}}/op25"
+audio_stream: "http://{{icecast_servername}}:{{icecast_port}}/{{icecast_mountpoint}}"
 channels:
   '10005': EBRP PD1
   '10007': EBRP FD1
@@ -548,8 +548,8 @@ channels:
   '7309': Martinez PD5
   '7405': Pittsburg PD1
   '7406': Pittsburg PD2
-  '7455': PleasantHill PD1
-  '7456': PleasantHill PD2
+  '7455': Pleasant Hill PD1
+  '7456': Pleasant Hill PD2
   '7505': Richmond PD1
   '7506': Richmond PD2
   '7507': Richmond PD3

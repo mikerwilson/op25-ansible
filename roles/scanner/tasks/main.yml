@@ -357,3 +357,12 @@
     group: "{{ op25_user }}"
     mode: '0644'
   tags: configs
+
+- name: place desktop.html
+  ansible.builtin.template:
+    src: "files/desktop.html.j2"
+    dest: "{{ op25_dir }}/op25/gr-op25_repeater/www/www-static/desktop.html"
+    owner: "{{ op25_user }}"
+    group: "{{ op25_user }}"
+    mode: '0644'
+  tags: configs
