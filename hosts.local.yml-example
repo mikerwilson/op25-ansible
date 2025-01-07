@@ -9,7 +9,14 @@ scanner:
     center_frequency: 774.45625
     NAC: 0x1f5
     frequency_offset: 0
+    favorites_tgids:
+      "7155": Concord PD1
+      "7169": Concord PD2
+      "7170": Concord PD3
+
     whitelisted_tgids:
-      "7155": "Concord PD1"
-      "7169": "Concord PD2"
-      "7170": "Concord PD3"
+      '7605': Walnut Creek PD1
+      '7712': CCSO Central
+      '7715': CCSO East
+      '7405': Pittsburg PD1
+      '7455': Pleasant Hill PD1
