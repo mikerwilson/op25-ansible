@@ -17,7 +17,7 @@
             flex-direction: column;
             transition: background-color 0.3s, color 0.3s;
         }
-        .container {
+        .page-container {
             padding: 20px;
             max-width: 1200px;
             margin: 20px auto;
@@ -38,7 +38,7 @@
             color: #fff;
             font-size: 24px;
         }
-        .toggle-button {
+        .day-night-toggle {
             background-color: #007bff;
             color: #fff;
             border: none;
@@ -47,14 +47,14 @@
             font-size: 16px;
             cursor: pointer;
         }
-        .toggle-button:hover {
+        .day-night-toggle:hover {
             background-color: #0056b3;
         }
         .main-content {
             display: flex;
             gap: 20px;
         }
-        .iframe-container {
+        .op25-iframe {
             flex: 2;
             height: 300px;
             background-color: #121212;
@@ -63,7 +63,7 @@
             position: sticky;
             top: 20px;
         }
-        .iframe-container iframe {
+        .op25-iframe iframe {
             width: 100%;
             height: 100%;
             border: none;
@@ -90,20 +90,20 @@
         .audio-player button:hover {
             opacity: 0.9;
         }
-        .section {
+        .favorites-scanlist {
             background-color: #1e1e1e;
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
         }
-        .section h2 {
+        .favorites-scanlist h2 {
             font-size: 20px;
             margin-bottom: 10px;
         }
-        .section div {
+        .favorites-scanlist div {
             margin-bottom: 10px;
         }
-        .section a {
+        .favorites-scanlist a {
             display: block;
             padding: 10px;
             background-color: #007bff;
@@ -113,10 +113,10 @@
             text-decoration: none;
             font-size: 16px;
         }
-        .section a:hover {
+        .favorites-scanlist a:hover {
             background-color: #0056b3;
         }
-        .grid-layout {
+        .favorites-scanlist-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
@@ -125,7 +125,7 @@
             background-color: #ffffff;
             color: #000000;
         }
-        .light-mode .section {
+        .light-mode .favorites-scanlist {
             background-color: #f9f9f9;
             border: 1px solid #ccc;
         }
@@ -133,11 +133,11 @@
             background-color: #f9f9f9;
             border: 1px solid #ccc;
         }
-        .light-mode .toggle-button {
+        .light-mode .day-night-toggle {
             background-color: #0056b3;
             color: #ffffff;
         }
-        .light-mode .toggle-button:hover {
+        .light-mode .day-night-toggle:hover {
             background-color: #004494;
         }
     </style>
@@ -157,7 +157,7 @@
             <div class="audio-player">
                 <p class="status" id="status">Status: Not playing</p>
                 <p class="status" id="timer">Time Elapsed: 00:00</p>
-                <button class="button" id="streamButton" onclick="toggleIcecastStream('{{ audio_stream | default('') }}')">Start Stream</button>
+                <button class="stream-start-stop" id="streamButton" onclick="toggleIcecastStream('{{ audio_stream | default('') }}')">Start Stream</button>
                 <audio id="liveAudio" style="display:none;"></audio>
             </div>
         </div>
