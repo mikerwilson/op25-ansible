@@ -42,6 +42,23 @@
             border: none;
             box-sizing: border-box;
         }
+
+        .scanbutton {
+            border-color: black;
+            color: white;
+            padding: 10px 10px;
+            text-decoration: none;
+            margin: 4px 2px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 22px;
+            font-weight: bold;
+            background: #669999;
+        }
+        .scanbutton:hover {
+            background-color: #4d7373;
+        }
+
         .audio-player {
             display: flex;
             justify-content: space-between;
@@ -52,11 +69,11 @@
             padding: 5px 10px;
         }
         .status {
-            font-size: 16px;
+            font-size: 18px;
         }
         .stream-start-stop {
             padding: 12px 24px;
-            background-color: #28a745;
+            background-color: #1d7831;
             color: #ffffff;
             border: none;
             border-radius: 5px;
@@ -65,14 +82,18 @@
             padding: 21px;
         }
         .stream-start-stop.playing {
-            background-color: #dc3545;
+            background-color: #9a2631;
         }
         .stream-start-stop:hover {
             opacity: 0.9;
         }
 
         .light-mode .stream-start-stop {
-            background-color: #28a745;
+            background-color: #35cd59;
+        }
+
+        .light-mode .stream-start-stop.playing {
+            background-color: #dc3545;
         }
 
         .favorites-scanlist {
@@ -92,7 +113,7 @@
         .favorites-scanlist button {
             display: block;
             width: 100%;
-            background-color: #0056b3;
+            background-color: #053467;
             color: #fff;
             padding: 28px 10px;
             border-radius: 5px;
@@ -106,19 +127,7 @@
         .favorites-scanlist button:hover {
             background-color: #007bff;
         }
-        .scan-button {
-            width: 100%;
-            padding: 12px 24px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            font-size: 20px;
-            cursor: pointer;
-        }
-        .scan-button:hover {
-            background-color: #218838;
-        }
+
         .day-night-toggle {
             position: fixed;
             top: 14px;
@@ -150,12 +159,12 @@
         .light-mode button:hover {
             color: #dddddd;
         }
-        .light-mode .scan-button {
-            background-color: #28a745;
+        .light-mode .scanbutton {
+            background-color: #669999;
             color: #ffffff !important;
         }
-        .light-mode .scan-button:hover {
-            background-color: #218838;
+        .light-mode .scanbutton:hover {
+            background-color: #3c5a5a;
         }
         .light-mode .day-night-toggle {
             background-color: #007bff;
@@ -171,7 +180,7 @@
             gap: 5px;
         }
         .all-talkgroups {
-            background-color: #0056b3;
+            background-color: #053467;
             color: white;
             cursor: pointer;
             padding: 10px 20px;
@@ -204,7 +213,7 @@
         .channel-list button {
             width: 240px;
             padding: 12px 24px;
-            background-color: #0056b3;
+            background-color: #053467;
             color: #fff;
             border: none;
             border-radius: 5px;
@@ -237,13 +246,13 @@
         <!-- Audio Player Section -->
         <div class="audio-player">
             <p class="status" id="status">Status: Not playing</p>
-            <p class="status" id="timer">Time Elapsed: 00:00</p>
+            <p class="status" id="timer">--:--</p>
             <button class="stream-start-stop" id="streamButton" onclick="toggleIcecastStream('{{ audio_stream }}')">Start Stream</button>
             <audio id="liveAudio" style="display:none;"></audio>
         </div>
 
         <!-- Scan Button -->
-        <button class="scan-button" onclick="setTGIDAndListen('0')">Scan</button>
+        <button class="scanbutton" onclick="setTGIDAndListen('0')">Scan</button>
         <div class="favorites-scanlist-grid">
             <!-- Favorites Section -->
             {% if favorites_tgids | default({}) %}
@@ -300,7 +309,7 @@
                 button.textContent = 'Start Stream';
                 button.classList.remove('playing');
                 status.textContent = 'Status: Not playing';
-                timer.textContent = 'Time Elapsed: 00:00';
+                timer.textContent = '--:--';
                 return;
             }
 
@@ -343,7 +352,7 @@
                 seconds++;
                 const minutes = String(Math.floor(seconds / 60)).padStart(2, '0');
                 const secs = String(seconds % 60).padStart(2, '0');
-                timerElement.textContent = `Time Elapsed: ${minutes}:${secs}`;
+                timerElement.textContent = `${minutes}:${secs}`;
             }, 1000);
         }
 
