@@ -13,6 +13,7 @@ control_channel_list: 774.45625,773.90625,774.18125,774.73125
 center_frequency: 774.45625
 frequency_offset: 0
 offset: 0
+fine_tune_offset: 0
 NAC: 0x1f5
 modulation: cqpsk
 icecast_servername: localhost

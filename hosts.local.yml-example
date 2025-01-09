@@ -9,6 +9,7 @@ scanner:
     center_frequency: 774.45625
     NAC: 0x1f5
     frequency_offset: 0
+    fine_tune_offset: 0
     favorites_tgids:
       "7155": Concord PD1
       "7169": Concord PD2
