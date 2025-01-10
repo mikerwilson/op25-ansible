@@ -8,8 +8,8 @@ scanner:
     control_channel_list: 774.45625,773.90625,774.18125,774.73125
     center_frequency: 774.45625
     NAC: 0x1f5
-    frequency_offset: 0
-    fine_tune_offset: 0
+    frequency_offset: -2
+    fine_tune_offset: 215
     favorites_tgids:
       "7155": Concord PD1
       "7169": Concord PD2
