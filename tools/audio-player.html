@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            justify-content: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .audio-player {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #1e1e1e;
+            border-radius: 5px;
+            border: 1px solid #333;
+            padding: 20px;
+            width: 300px;
+        }
+        .status {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .stream-start-stop {
+            padding: 12px 24px;
+            background-color: #1d7831;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            font-size: 20px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .stream-start-stop.playing {
+            background-color: #9a2631;
+        }
+        .stream-start-stop:hover {
+            opacity: 0.9;
+        }
+        .day-night-toggle {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .day-night-toggle:hover {
+            background-color: #0056b3;
+        }
+        .light-mode {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .light-mode .audio-player {
+            background-color: #f9f9f9;
+            border-color: #ccc;
+        }
+        .light-mode .stream-start-stop {
+            background-color: #35cd59;
+        }
+        .light-mode .stream-start-stop.playing {
+            background-color: #dc3545;
+        }
+        .url-input {
+            margin-bottom: 10px;
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            font-size: 16px;
+        }
+        .light-mode .url-input {
+            background-color: #f9f9f9;
+            color: #000000;
+            border-color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <button class="day-night-toggle" onclick="toggleTheme()">Day/Night Mode</button>
+    <div class="audio-player">
+        <input type="text" class="url-input" id="streamUrl" placeholder="Enter stream URL" />
+        <p class="status" id="status">Status: Not playing</p>
+        <p class="status" id="timer">--:--</p>
+        <button class="stream-start-stop" id="streamButton" onclick="toggleIcecastStream()">Start Stream</button>
+        <audio id="liveAudio" style="display:none;"></audio>
+    </div>
+
+    <script>
+        // Example URL: https://yourdomain.com/audio-player.html?url=https://example.com/stream
+
+        let mediaSource;
+        let sourceBuffer;
+        const audio = document.getElementById('liveAudio');
+        const streamUrlInput = document.getElementById('streamUrl');
+        let timerInterval;
+
+        // Load URL from localStorage or URL parameter
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const savedUrl = localStorage.getItem('streamUrl');
+            const paramUrl = urlParams.get('url');
+            if (paramUrl) {
+                streamUrlInput.value = paramUrl;
+            } else if (savedUrl) {
+                streamUrlInput.value = savedUrl;
+            }
+        };
+
+        // Save URL to localStorage on input change
+        streamUrlInput.addEventListener('input', function() {
+            localStorage.setItem('streamUrl', streamUrlInput.value);
+        });
+
+        async function toggleIcecastStream() {
+            const button = document.getElementById('streamButton');
+            const status = document.getElementById('status');
+            const timer = document.getElementById('timer');
+            const streamUrl = streamUrlInput.value;
+
+            if (!streamUrl) {
+                alert('Please enter a valid stream URL.');
+                return;
+            }
+
+            if (button.classList.contains('playing')) {
+                clearInterval(timerInterval);
+                audio.pause();
+                button.textContent = 'Start Stream';
+                button.classList.remove('playing');
+                status.textContent = 'Status: Not playing';
+                timer.textContent = '--:--';
+                return;
+            }
+
+            try {
+                status.textContent = 'Status: Connecting...';
+                mediaSource = new MediaSource();
+                audio.src = URL.createObjectURL(mediaSource);
+
+                mediaSource.addEventListener('sourceopen', async () => {
+                    sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
+                    const response = await fetch(streamUrl);
+                    const reader = response.body.getReader();
+
+                    async function read() {
+                        const { done, value } = await reader.read();
+                        if (done) {
+                            mediaSource.endOfStream();
+                            return;
+                        }
+                        sourceBuffer.appendBuffer(value);
+                        await read();
+                    }
+                    await read();
+                });
+
+                audio.play();
+                button.textContent = 'Stop Stream';
+                button.classList.add('playing');
+                status.textContent = 'Status: Playing';
+                startTimer(timer);
+
+            } catch (error) {
+                status.textContent = 'Status: Error - ' + error.message;
+                console.error('Error playing Icecast stream:', error);
+            }
+        }
+
+        function startTimer(timerElement) {
+            let seconds = 0;
+            timerInterval = setInterval(() => {
+                seconds++;
+                const minutes = String(Math.floor(seconds / 60)).padStart(2, '0');
+                const secs = String(seconds % 60).padStart(2, '0');
+                timerElement.textContent = `${minutes}:${secs}`;
+            }, 1000);
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+        }
+
+        // Automatically set theme based on system preference
+        const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+        if (prefersDarkScheme.matches) {
+            document.body.classList.remove('light-mode');
+        } else {
+            document.body.classList.add('light-mode');
+        }
+    </script>
+</body>
+</html>
