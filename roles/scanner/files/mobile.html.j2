@@ -216,6 +216,10 @@
             font-family: monospace;
 
         }
+        .channel-list.active {
+            display: block;
+        }
+
         .channel-list .favorites-scanlist-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -249,6 +253,43 @@
         .nav-bar .flex-container .div_s2 {
             width: 800px
         }
+
+        .search-bar {
+            margin-bottom: 20px;
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #333;
+            border-radius: 5px;
+            font-size: 16px;
+            background-color: #1e1e1e;
+            color: #fff;
+            box-sizing: border-box;
+        }
+
+        .search-bar::placeholder {
+            color: #aaa;
+        }
+
+        .light-mode .search-bar {
+            background-color: #f9f9f9;
+            color: #000;
+            border-color: #ccc;
+        }
+
+        {#.tgid-entry button {#}
+        {#    width: 100%;#}
+        {#    padding: 10px;#}
+        {#    font-size: 14px;#}
+        {#    border: none;#}
+        {#    border-radius: 5px;#}
+        {#    background-color: #333;#}
+        {#    color: #fff;#}
+        {#    cursor: pointer;#}
+        {#}#}
+        {##}
+        {#.tgid-entry button:hover {#}
+        {#    background-color: #555;#}
+        {#}#}
 
     </style>
 </head>
@@ -299,9 +340,10 @@
         <!-- All Talkgroups Section -->
         <button class="all-talkgroups">All Talkgroups</button>
         <div class="channel-list">
-            <div class="favorites-scanlist-grid">
+            <input type="text" class="search-bar" id="searchTalkgroups" placeholder="Search Talkgroups...">
+            <div class="favorites-scanlist-grid" id="talkgroupList">
                 {% for tgid, name in channels.items() %}
-                <div class="tgid-entry">
+                <div class="tgid-entry" data-tgid="{{ tgid }}" data-name="{{ name | lower }}">
                     <button onclick="setTGIDAndListen('{{ tgid }}')">{{ name }}<br>({{ tgid }})</button>
                 </div>
                 {% endfor %}
@@ -398,7 +440,19 @@
 
         collapsible.addEventListener('click', function() {
             this.classList.toggle('active');
-            content.style.display = content.style.display === 'block' ? 'none' : 'block';
+            content.classList.toggle('active');
+        });
+
+        const searchInput = document.getElementById('searchTalkgroups');
+        const talkgroupList = document.getElementById('talkgroupList');
+        searchInput.addEventListener('input', function() {
+            const filter = searchInput.value.toLowerCase();
+            const entries = talkgroupList.getElementsByClassName('tgid-entry');
+            for (let i = 0; i < entries.length; i++) {
+                const entry = entries[i];
+                const name = entry.getAttribute('data-name');
+                entry.style.display = name.includes(filter) ? '' : 'none';
+            }
         });
     </script>
 </body>
