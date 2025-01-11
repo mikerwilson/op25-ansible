@@ -276,21 +276,6 @@
             border-color: #ccc;
         }
 
-        {#.tgid-entry button {#}
-        {#    width: 100%;#}
-        {#    padding: 10px;#}
-        {#    font-size: 14px;#}
-        {#    border: none;#}
-        {#    border-radius: 5px;#}
-        {#    background-color: #333;#}
-        {#    color: #fff;#}
-        {#    cursor: pointer;#}
-        {#}#}
-        {##}
-        {#.tgid-entry button:hover {#}
-        {#    background-color: #555;#}
-        {#}#}
-
     </style>
 </head>
 <body>
@@ -356,6 +341,9 @@
         let sourceBuffer;
         const audio = document.getElementById('liveAudio');
         let timerInterval;
+
+        // Set the audio volume to max (1.0)
+        audio.volume = 1.0;
 
         async function toggleIcecastStream(url) {
             const button = document.getElementById('streamButton');
@@ -454,6 +442,44 @@
                 entry.style.display = name.includes(filter) ? '' : 'none';
             }
         });
+
+        // Detect external play, pause, and end events
+        audio.addEventListener('play', () => {
+            updateUIPlaying();
+        });
+
+        audio.addEventListener('pause', () => {
+            updateUIStopped();
+        });
+
+        audio.addEventListener('ended', () => {
+            updateUIStopped();
+        });
+
+        function updateUIPlaying() {
+            const button = document.getElementById('streamButton');
+            const status = document.getElementById('status');
+            const timer = document.getElementById('timer');
+
+            if (!button.classList.contains('playing')) {
+                button.textContent = 'Stop Stream';
+                button.classList.add('playing');
+                status.textContent = 'Status: Playing';
+                startTimer(timer);
+            }
+        }
+
+        function updateUIStopped() {
+            const button = document.getElementById('streamButton');
+            const status = document.getElementById('status');
+            const timer = document.getElementById('timer');
+
+            clearInterval(timerInterval);
+            button.textContent = 'Start Stream';
+            button.classList.remove('playing');
+            status.textContent = 'Status: Not playing';
+            timer.textContent = '--:--';
+        }
     </script>
 </body>
 </html>
