@@ -341,6 +341,9 @@
     let sourceBuffer;
     const audio = document.getElementById('liveAudio');
     let timerInterval;
+    let jumpToLiveEdgeInterval;
+    let isJumpToLiveEdgeEnabled = true;
+    let jumpIntervalTime = 60000; // Default interval time (60 seconds)
 
     // Set the audio volume to max (1.0)
     audio.volume = 1.0;
@@ -352,6 +355,7 @@
 
         if (button.classList.contains('playing')) {
             clearInterval(timerInterval);
+            clearInterval(jumpToLiveEdgeInterval);
             audio.pause();
             button.textContent = 'Start Stream';
             button.classList.remove('playing');
@@ -387,6 +391,10 @@
             button.classList.add('playing');
             status.textContent = 'Status: Playing';
             startTimer(timer);
+
+            if (isJumpToLiveEdgeEnabled) {
+                startJumpToLiveEdgeInterval();
+            }
         } catch (error) {
             status.textContent = 'Status: Error - ' + error.message;
             console.error('Error playing Icecast stream:', error);
@@ -446,15 +454,19 @@
     // Detect external play, pause, and end events
     audio.addEventListener('play', () => {
         updateUIPlaying();
-        jumpToLiveEdge();
+        if (isJumpToLiveEdgeEnabled) {
+            startJumpToLiveEdgeInterval();
+        }
     });
 
     audio.addEventListener('pause', () => {
         updateUIStopped();
+        clearInterval(jumpToLiveEdgeInterval);
     });
 
     audio.addEventListener('ended', () => {
         updateUIStopped();
+        clearInterval(jumpToLiveEdgeInterval);
     });
 
     function updateUIPlaying() {
@@ -490,6 +502,32 @@
                 audio.currentTime = liveEdge - 0.5;
                 console.log('Jumped to live edge:', liveEdge);
             }
+        }
+    }
+
+    // Toggle the jump to live edge feature
+    function toggleJumpToLiveEdge() {
+        isJumpToLiveEdgeEnabled = !isJumpToLiveEdgeEnabled;
+        if (isJumpToLiveEdgeEnabled) {
+            startJumpToLiveEdgeInterval();
+        } else {
+            clearInterval(jumpToLiveEdgeInterval);
+        }
+        console.log('Jump to live edge:', isJumpToLiveEdgeEnabled ? 'Enabled' : 'Disabled');
+    }
+
+    // Start an interval to run jumpToLiveEdge with configurable time
+    function startJumpToLiveEdgeInterval() {
+        clearInterval(jumpToLiveEdgeInterval);
+        jumpToLiveEdgeInterval = setInterval(jumpToLiveEdge, jumpIntervalTime);
+    }
+
+    // Function to update the interval time dynamically
+    function setJumpIntervalTime(seconds) {
+        jumpIntervalTime = seconds * 1000;
+        console.log(`Jump to live edge interval set to ${seconds} seconds.`);
+        if (isJumpToLiveEdgeEnabled) {
+            startJumpToLiveEdgeInterval();
         }
     }
 </script>
