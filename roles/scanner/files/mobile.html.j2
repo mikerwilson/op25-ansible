@@ -336,150 +336,162 @@
         </div>
     </div>
 
-    <script>
-        let mediaSource;
-        let sourceBuffer;
-        const audio = document.getElementById('liveAudio');
-        let timerInterval;
+<script>
+    let mediaSource;
+    let sourceBuffer;
+    const audio = document.getElementById('liveAudio');
+    let timerInterval;
 
-        // Set the audio volume to max (1.0)
-        audio.volume = 1.0;
+    // Set the audio volume to max (1.0)
+    audio.volume = 1.0;
 
-        async function toggleIcecastStream(url) {
-            const button = document.getElementById('streamButton');
-            const status = document.getElementById('status');
-            const timer = document.getElementById('timer');
+    async function toggleIcecastStream(url) {
+        const button = document.getElementById('streamButton');
+        const status = document.getElementById('status');
+        const timer = document.getElementById('timer');
 
-            if (button.classList.contains('playing')) {
-                clearInterval(timerInterval);
-                audio.pause();
-                button.textContent = 'Start Stream';
-                button.classList.remove('playing');
-                status.textContent = 'Status: Not playing';
-                timer.textContent = '--:--';
-                return;
-            }
-
-            try {
-                status.textContent = 'Status: Connecting...';
-                mediaSource = new MediaSource();
-                audio.src = URL.createObjectURL(mediaSource);
-
-                mediaSource.addEventListener('sourceopen', async () => {
-                    sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
-                    const response = await fetch(url);
-                    const reader = response.body.getReader();
-
-                    async function read() {
-                        const { done, value } = await reader.read();
-                        if (done) {
-                            mediaSource.endOfStream();
-                            return;
-                        }
-                        sourceBuffer.appendBuffer(value);
-                        await read();
-                    }
-                    await read();
-                });
-
-                audio.play();
-                button.textContent = 'Stop Stream';
-                button.classList.add('playing');
-                status.textContent = 'Status: Playing';
-                startTimer(timer);
-            } catch (error) {
-                status.textContent = 'Status: Error - ' + error.message;
-                console.error('Error playing Icecast stream:', error);
-            }
-        }
-
-        function startTimer(timerElement) {
-            let seconds = 0;
-            timerInterval = setInterval(() => {
-                seconds++;
-                const minutes = String(Math.floor(seconds / 60)).padStart(2, '0');
-                const secs = String(seconds % 60).padStart(2, '0');
-                timerElement.textContent = `${minutes}:${secs}`;
-            }, 1000);
-        }
-
-        function setTGIDAndListen(tgid) {
-            const originalPrompt = window.prompt;
-            window.prompt = function() { return tgid; };
-            f_scan_button('goto');
-            window.prompt = originalPrompt;
-        }
-
-        function toggleTheme() {
-            document.body.classList.toggle('light-mode');
-        }
-
-        // Automatically set theme based on system preference
-        const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
-        if (prefersDarkScheme.matches) {
-            document.body.classList.remove('light-mode');
-        } else {
-            document.body.classList.add('light-mode');
-        }
-
-        // Collapsible Section Logic
-        const collapsible = document.querySelector('.all-talkgroups');
-        const content = document.querySelector('.channel-list');
-
-        collapsible.addEventListener('click', function() {
-            this.classList.toggle('active');
-            content.classList.toggle('active');
-        });
-
-        const searchInput = document.getElementById('searchTalkgroups');
-        const talkgroupList = document.getElementById('talkgroupList');
-        searchInput.addEventListener('input', function() {
-            const filter = searchInput.value.toLowerCase();
-            const entries = talkgroupList.getElementsByClassName('tgid-entry');
-            for (let i = 0; i < entries.length; i++) {
-                const entry = entries[i];
-                const name = entry.getAttribute('data-name');
-                entry.style.display = name.includes(filter) ? '' : 'none';
-            }
-        });
-
-        // Detect external play, pause, and end events
-        audio.addEventListener('play', () => {
-            updateUIPlaying();
-        });
-
-        audio.addEventListener('pause', () => {
-            updateUIStopped();
-        });
-
-        audio.addEventListener('ended', () => {
-            updateUIStopped();
-        });
-
-        function updateUIPlaying() {
-            const button = document.getElementById('streamButton');
-            const status = document.getElementById('status');
-            const timer = document.getElementById('timer');
-
-            if (!button.classList.contains('playing')) {
-                button.textContent = 'Stop Stream';
-                button.classList.add('playing');
-                status.textContent = 'Status: Playing';
-                startTimer(timer);
-            }
-        }
-
-        function updateUIStopped() {
-            const button = document.getElementById('streamButton');
-            const status = document.getElementById('status');
-            const timer = document.getElementById('timer');
-
+        if (button.classList.contains('playing')) {
             clearInterval(timerInterval);
+            audio.pause();
             button.textContent = 'Start Stream';
             button.classList.remove('playing');
             status.textContent = 'Status: Not playing';
             timer.textContent = '--:--';
+            return;
         }
-    </script>
+
+        try {
+            status.textContent = 'Status: Connecting...';
+            mediaSource = new MediaSource();
+            audio.src = URL.createObjectURL(mediaSource);
+
+            mediaSource.addEventListener('sourceopen', async () => {
+                sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
+                const response = await fetch(url);
+                const reader = response.body.getReader();
+
+                async function read() {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        mediaSource.endOfStream();
+                        return;
+                    }
+                    sourceBuffer.appendBuffer(value);
+                    await read();
+                }
+                await read();
+            });
+
+            audio.play();
+            button.textContent = 'Stop Stream';
+            button.classList.add('playing');
+            status.textContent = 'Status: Playing';
+            startTimer(timer);
+        } catch (error) {
+            status.textContent = 'Status: Error - ' + error.message;
+            console.error('Error playing Icecast stream:', error);
+        }
+    }
+
+    function startTimer(timerElement) {
+        let seconds = 0;
+        timerInterval = setInterval(() => {
+            seconds++;
+            const minutes = String(Math.floor(seconds / 60)).padStart(2, '0');
+            const secs = String(seconds % 60).padStart(2, '0');
+            timerElement.textContent = `${minutes}:${secs}`;
+        }, 1000);
+    }
+
+    function setTGIDAndListen(tgid) {
+        const originalPrompt = window.prompt;
+        window.prompt = function() { return tgid; };
+        f_scan_button('goto');
+        window.prompt = originalPrompt;
+    }
+
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+    }
+
+    // Automatically set theme based on system preference
+    const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+    if (prefersDarkScheme.matches) {
+        document.body.classList.remove('light-mode');
+    } else {
+        document.body.classList.add('light-mode');
+    }
+
+    // Collapsible Section Logic
+    const collapsible = document.querySelector('.all-talkgroups');
+    const content = document.querySelector('.channel-list');
+
+    collapsible.addEventListener('click', function() {
+        this.classList.toggle('active');
+        content.classList.toggle('active');
+    });
+
+    const searchInput = document.getElementById('searchTalkgroups');
+    const talkgroupList = document.getElementById('talkgroupList');
+    searchInput.addEventListener('input', function() {
+        const filter = searchInput.value.toLowerCase();
+        const entries = talkgroupList.getElementsByClassName('tgid-entry');
+        for (let i = 0; i < entries.length; i++) {
+            const entry = entries[i];
+            const name = entry.getAttribute('data-name');
+            entry.style.display = name.includes(filter) ? '' : 'none';
+        }
+    });
+
+    // Detect external play, pause, and end events
+    audio.addEventListener('play', () => {
+        updateUIPlaying();
+        jumpToLiveEdge();
+    });
+
+    audio.addEventListener('pause', () => {
+        updateUIStopped();
+    });
+
+    audio.addEventListener('ended', () => {
+        updateUIStopped();
+    });
+
+    function updateUIPlaying() {
+        const button = document.getElementById('streamButton');
+        const status = document.getElementById('status');
+        const timer = document.getElementById('timer');
+
+        if (!button.classList.contains('playing')) {
+            button.textContent = 'Stop Stream';
+            button.classList.add('playing');
+            status.textContent = 'Status: Playing';
+            startTimer(timer);
+        }
+    }
+
+    function updateUIStopped() {
+        const button = document.getElementById('streamButton');
+        const status = document.getElementById('status');
+        const timer = document.getElementById('timer');
+
+        clearInterval(timerInterval);
+        button.textContent = 'Start Stream';
+        button.classList.remove('playing');
+        status.textContent = 'Status: Not playing';
+        timer.textContent = '--:--';
+    }
+
+    // Jump to the live edge of the buffered audio
+    function jumpToLiveEdge() {
+        if (audio.buffered.length > 0) {
+            const liveEdge = audio.buffered.end(audio.buffered.length - 1);
+            if (audio.currentTime < liveEdge - 1) {
+                audio.currentTime = liveEdge - 0.5;
+                console.log('Jumped to live edge:', liveEdge);
+            }
+        }
+    }
+</script>
 </body>
 </html>
