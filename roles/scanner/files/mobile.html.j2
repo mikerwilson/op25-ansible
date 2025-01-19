@@ -83,19 +83,18 @@
         .favorites-scanlist div {
             margin-bottom: 5px;
         }
-        .favorites-scanlist button {
+        .big-button {
             display: block;
             width: 100%;
             background-color: #053467;
             color: #fff;
-            padding: 18px 10px;
+            padding: 15px 10px;
             border-radius: 5px;
             text-align: center;
             border: none;
             font-size: 20px;
             cursor: pointer;
             font-family: monospace;
-
         }
         .favorites-scanlist button:hover {
             background-color: #007bff;
@@ -191,7 +190,7 @@
             gap: 7px;
             justify-items: center;
         }
-        .channel-list button {
+        .big-tgid-button {
             width: 240px;
             padding: 12px 7px;
             background-color: #4b4b4e;
@@ -207,13 +206,13 @@
             background-color: #6c6c73;
         }
 
-        .light-mode .channel-list button {
-            background-color: #669999;
-        }
-
-        .light-mode .channel-list button:hover {
-            background-color: #3c5a5a;
-        }
+        {#.light-mode .channel-list button {#}
+        {#    background-color: #669999;#}
+        {#}#}
+        {##}
+        {#.light-mode .channel-list button:hover {#}
+        {#    background-color: #3c5a5a;#}
+        {#}#}
 
         .nav-bar .flex-container .div_s2 {
             width: 800px
@@ -440,7 +439,42 @@
             color: #333; /* Dark gray for labels */
             margin-bottom: 5px;
         }
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 10px;
+        }
 
+
+        .scan-controls {
+            display: flex;
+            width: 100%;
+            padding: 2px 0;
+        }
+
+        .scan-button, .light-mode .scan-button {
+            flex: 1; /* Divide width equally */
+            padding: 0px 0;
+            font-size: 14px;
+            text-align: center;
+            border: none;
+            background-color: #1d7831;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .scan-button:hover {
+            background-color: #007bff;
+        }
+
+        .scan-button:nth-child(2), .light-mode .scan-button:nth-child(2) {
+            background-color: #9a2631; /* Different color for - button */
+        }
+
+        .scan-button:nth-child(2):hover, .light-mode .scan-button:nth-child(2):hover {
+            background-color: #dc3545;
+        }
     </style>
 </head>
 <body onload="do_onload()">
@@ -527,43 +561,54 @@
             <audio id="liveAudio" style="display:none;"></audio>
         </div>
 
-        <div class="favorites-scanlist-grid">
-            <!-- Favorites Section -->
-            {% if favorites_tgids | default({}) %}
-            <div class="favorites-scanlist">
-                <h2>Favorites</h2>
-                {% for tgid, name in favorites_tgids.items() %}
-                <div>
-                    <button onclick="setTGIDAndListen('{{ tgid }}')">{{ name }}<br>{{ tgid }}</button>
-                </div>
-                {% endfor %}
+    <div class="favorites-scanlist-grid">
+        <!-- Favorites Section -->
+        {% if favorites_tgids | default({}) %}
+        <div class="favorites-scanlist">
+            <h2>Favorites</h2>
+            {% for tgid, name in favorites_tgids.items() %}
+            <div class="button-container">
+                <button class="big-button" onclick="setTGIDAndListen('{{ tgid }}')">{{ name }}<br>{{ tgid }}</button>
+{#                <div class="scan-controls">#}
+{#                    <button class="scan-button" onclick="whitelistTGID('{{ tgid }}')">+</button>#}
+{#                    <button class="scan-button" onclick="blacklistTGID('{{ tgid }}')">-</button>#}
+{#                </div>#}
             </div>
-            {% endif %}
-
-            <!-- Whitelisted TGIDs Section -->
-            {% if whitelisted_tgids | default({}) %}
-            <div class="favorites-scanlist">
-                <h2>Scan List</h2>
-                {% for tgid, name in whitelisted_tgids.items() %}
-                <div>
-                    <button onclick="setTGIDAndListen('{{ tgid }}')">{{ name }}<br>{{ tgid }}</button>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
+            {% endfor %}
         </div>
+        {% endif %}
 
-        <!-- All Talkgroups Section -->
-        <button class="all-talkgroups">All Talkgroups</button>
-        <div class="channel-list">
-            <input type="text" class="search-bar" id="searchTalkgroups" placeholder="Search Talkgroups...">
-            <div class="favorites-scanlist-grid" id="talkgroupList">
-                {% for tgid, name in channels.items() %}
-                <div class="tgid-entry" data-tgid="{{ tgid }}" data-name="{{ name | lower }}">
-                    <button onclick="setTGIDAndListen('{{ tgid }}')">{{ name }}<br>{{ tgid }}</button>
-                </div>
-                {% endfor %}
+        <!-- Whitelisted TGIDs Section -->
+        {% if whitelisted_tgids | default({}) %}
+        <div class="favorites-scanlist">
+            <h2>Scan List</h2>
+            {% for tgid, name in whitelisted_tgids.items() %}
+            <div class="button-container">
+                <button class="big-button" onclick="setTGIDAndListen('{{ tgid }}')">{{ name }}<br>{{ tgid }}</button>
+{#                <div class="scan-controls">#}
+{#                    <button class="scan-button" onclick="whitelistTGID('{{ tgid }}')">+</button>#}
+{#                    <button class="scan-button" onclick="blacklistTGID('{{ tgid }}')">-</button>#}
+{#                </div>#}
             </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- All Talkgroups Section -->
+    <button class="all-talkgroups">All Talkgroups</button>
+    <div class="channel-list">
+        <input type="text" class="search-bar" id="searchTalkgroups" placeholder="Search Talkgroups...">
+        <div class="favorites-scanlist-grid" id="talkgroupList">
+            {% for tgid, name in channels.items() %}
+            <div class="button-container tgid-entry" data-tgid="{{ tgid }}" data-name="{{ name | lower }}">
+                <button class="big-tgid-button" onclick="setTGIDAndListen('{{ tgid }}')">{{ name }}<br>{{ tgid }}</button>
+                <div class="scan-controls">
+                    <button class="scan-button" onclick="whitelistTGID('{{ tgid }}')">+</button>
+                    <button class="scan-button" onclick="blacklistTGID('{{ tgid }}')">-</button>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     </div>
 
@@ -674,7 +719,7 @@
     function blacklistTGID(tgid) {
         const originalPrompt = window.prompt;
         window.prompt = function() { return tgid; };
-        f_scan_button('blacklist');
+        f_scan_button('lockout');
         window.prompt = originalPrompt;
     }
 
