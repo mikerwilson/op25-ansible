@@ -372,10 +372,19 @@
     mode: '0644'
   tags: configs, mobile
 
-- name: place desktop.html
+- name: place monbile-iframe.html
   ansible.builtin.template:
-    src: "files/desktop.html.j2"
-    dest: "{{ op25_dir }}/op25/gr-op25_repeater/www/www-static/desktop.html"
+    src: "files/mobile-iframe.html.j2"
+    dest: "{{ op25_dir }}/op25/gr-op25_repeater/www/www-static/mobile-iframe.html"
+    owner: "{{ op25_user }}"
+    group: "{{ op25_user }}"
+    mode: '0644'
+  tags: configs, mobile
+
+- name: place audio-player.html
+  ansible.builtin.template:
+    src: "../tools/audio-player.html"
+    dest: "{{ op25_dir }}/op25/gr-op25_repeater/www/www-static/audio-player.html"
     owner: "{{ op25_user }}"
     group: "{{ op25_user }}"
     mode: '0644'

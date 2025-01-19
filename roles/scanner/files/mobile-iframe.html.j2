@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OP25 Channel Control</title>
+    <link rel="stylesheet" type="text/css" href="main.css">
     <script src="main.js"></script>
     <style>
         body {
@@ -26,6 +27,39 @@
             width: 100%; /* Ensures it expands to the max width */
             margin: 0 auto; /* Centers the container */
             box-sizing: border-box; /* Ensures padding doesn’t reduce width */
+        }
+        .op25-iframe {
+            width: 100%;
+            height: 230px;
+            margin-bottom: 3px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: #121212;
+        }
+        .op25-iframe iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            box-sizing: border-box;
+        }
+
+        .scanbutton {
+            border-color: black;
+            color: white;
+            padding: 10px 10px;
+            text-decoration: none;
+            margin: 4px 2px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 22px;
+            {#font-weight: bold;#}
+            background: #7d39c6;
+            font-family: monospace;
+
+        }
+        .scanbutton:hover {
+            background-color: #9946f3;
         }
 
         .audio-player {
@@ -94,6 +128,7 @@
             border: none;
             font-size: 20px;
             cursor: pointer;
+            {#font-weight: bold;#}
             font-family: monospace;
 
         }
@@ -122,7 +157,7 @@
             background-color: #ffffff;
             color: #000000;
         }
-        .light-mode .favorites-scanlist, .light-mode .audio-player, .light-mode .channel-list, .light-mode .favorites-scanlist-grid {
+        .light-mode .op25-iframe, .light-mode .favorites-scanlist, .light-mode .audio-player, .light-mode .channel-list, .light-mode .favorites-scanlist-grid {
             background-color: #f9f9f9;
             border-color: #ccc;
         }
@@ -240,284 +275,16 @@
             color: #000;
             border-color: #ccc;
         }
-       .menu-bar {
-            display: flex;
-            background: #333;
-            padding: 0px;
-            justify-content: space-around;
-            align-items: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            border-bottom: 2px solid #444;
-        }
-
-        .menu-bar button {
-            background: linear-gradient(to bottom, #555, #333);
-            color: #fff;
-            font-weight: bold;
-            {#font-family: 'Courier New', monospace;#}
-            border: 1px solid #666;
-            padding: 15px 20px;
-            margin: 3px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 18px;
-            width: 123px;
-            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
-            transition: transform 0.2s, box-shadow 0.3s;
-        }
-
-        .menu-bar button:hover {
-            background: linear-gradient(to bottom, #666, #444);
-            transform: scale(1.05);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
-        }
-
-        .menu-bar button:active {
-            background: #222;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
-            transform: scale(0.98);
-        }
-
-        .light-mode .menu-bar {
-            background-color: #eaeaea
-        }
-
-        .light-mode .menu-bar button {
-            background: linear-gradient(to bottom, #f7f7f7, #e3e3e3); /* Light gradient */
-            color: #333; /* Dark text for readability */
-            border: 1px solid #ccc; /* Soft gray border */
-            padding: 15px 20px;
-            margin: 5px;
-            border-radius: 8px;
-            cursor: pointer;
-            {#font-size: 20px;#}
-            width: 123px;
-            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5); /* Subtle highlight */
-            transition: transform 0.2s, box-shadow 0.3s;
-        }
-
-         .light-mode .menu-bar button:hover {
-            background: linear-gradient(to bottom, #e9e9e9, #d6d6d6); /* Slightly darker gradient */
-            transform: scale(1.05);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Lighter shadow */
-        }
-
-         .light-mode .menu-bar button:active {
-            background: #ccc; /* Active state with solid color */
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3); /* Subtle inset shadow */
-            transform: scale(0.98);
-        }
-
-
-        .display-item span {
-            font-weight: bold;
-        }
-        #div_status, #div_plot, #div_about {
-            display: block;
-        }
-        #div_debug {
-            display: none;
-        }
-        .div_status {
-            border: 1px;
-            border: 2px solid #39FF14;
-            color: #39FF14;
-            border-radius: 5px;
-        }
-
-.       s2 {
-            margin: 20px auto;
-            padding: 15px;
-            background: #000;
-            border: 2px solid #39FF14;
-            border-radius: 10px;
-            color: #39FF14;
-            max-width: 600px;
-            box-shadow: 0 0 15px rgba(57, 255, 20, 0.5);
-        }
-
-        .s2_row {
-            display: block;
-            flex: 1;
-            justify-content: space-between;
-            text-align: center;
-            align-items: center;
-            margin: 0px 0;
-            font-size: 30px;
-            font-weight: bold;
-            height: 35px;
-            text-shadow: 0 0 10px rgba(57, 255, 20, 0.8);
-        }
-        .value {
-            color: #39FF14;
-            font-size: 30px;
-            font-weight: bold;
-        }
-
-        .label {
-            font-size: 18px;
-            color: #FFD700; /* Amber for labels */
-            margin-bottom: 5px;
-        }
-
-        .light-mode .s2 {
-            margin: 20px auto;
-            padding: 0px;
-            background: #fff;
-            /* border: 2px solid #000; */
-            border-radius: 10px;
-            color: #000;
-            /* max-width: 600px; */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .light-mode .s2_row {
-            display: block;
-            flex: 1;
-            justify-content: space-between;
-            text-align: center;
-            align-items: center;
-            margin: 0px 0;
-            font-size: 30px;
-            font-weight: bold;
-            height: 35px;
-            text-shadow: none; /* Remove glowing effect for better visibility in light mode */
-            color: #000; /* Black for text readability */
-        }
-
-        .light-mode .value {
-            color: #000; /* High contrast black for text */
-            font-size: 30px;
-            font-weight: bold;
-        }
-
-        .light-mode .label {
-            font-size: 18px;
-            color: #333; /* Dark gray for labels to differentiate from values */
-            margin-bottom: 5px;
-        }
-
-        .light-mode .div_status {
-            border: 0px solid #000; /* High contrast black border */
-            color: #000; /* Black text for clear readability */
-            background: #fff; /* White background */
-            border-radius: 5px;
-        }
-
-        .light-mode .s2 {
-            margin: 0px auto;
-            {#padding: 15px;#}
-            background: #fff; /* White background for visibility */
-            border: 0px solid #000; /* High contrast black border */
-            border-radius: 10px;
-            color: #000; /* Black text */
-            {#max-width: 600px;#}
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Subtle shadow for separation */
-        }
-
-        .light-mode .s2_row {
-            display: block;
-            flex: 1;
-            justify-content: space-between;
-            text-align: center;
-            align-items: center;
-            margin: 0;
-            font-size: 30px; /* Large text for readability */
-            font-weight: bold;
-            height: 35px;
-            color: #000; /* Black text for content */
-            text-shadow: none; /* Remove glow for clarity in bright light */
-        }
-
-        .light-mode .value {
-            color: #000; /* Black for content values */
-            font-size: 30px;
-            font-weight: bold;
-        }
-
-        .light-mode .label {
-            font-size: 18px;
-            color: #333; /* Dark gray for labels */
-            margin-bottom: 5px;
-        }
 
     </style>
 </head>
-<body onload="do_onload()">
+<body>
     <button class="day-night-toggle" onclick="toggleTheme()">Day/Night<br>Mode</button>
     <div class="page-container">
-
-    <br>
-    <ul class="nav-ul" style="display: none;">
-        <li id="li1" class="nav-li"><input id="b1" class="nav-button" type="button" name="B1" value="Home" method="post" action="" onc>        <li id="li2" class="nav-li"><input id="b2" class="nav-button" type="button" name="B2" value="Plot" method="post" action="" onc>        <li id="li3" class="nav-li"><input id="b3" class="nav-button" type="button" name="B3" value="About" method="post" action="" on>        <li id="li4"><span class="copyr"> &copy; 2017-2024 Max H. Parke & Graham J. Norbury [boatbod version]</span></li>
-    </ul>
-    <div id="div_status" class="div_status">
-        <div id="div_s2" class="s2">
-            <div class="s2_row">
-                <div class="s2_cell_a" style="display: none;"><span class="label">Frequency:</span></div>
-                <div class="s2_cell_b1" style="display: none;" id="s2_freq">&nbsp</div>
-                <div class="s2_cell_c" id="s2_ch_lbl" style="display:none;"><span class="label">Channel:</span></div>
-                <div class="s2_cell_d" id="s2_ch_txt" style="display:none;">&nbsp</div>
-                <div class="s2_cell_e" id="s2_ch_dn" style="display:none;"><input type="button" class="chan-button" name="c_dn" value="<" title="Prev Channel" onclick="javascript:f_chan_button(-1);"></div>
-                <div class="s2_cell_f" id="s2_ch_dmp" style="display:none;"><input type="button" class="chan-button" name="c_dmp" value="d" title="Log TGs" onclick="javascript:f_dump_button(0);"></div>
-                <div class="s2_cell_g" id="s2_ch_up" style="display:none;"><input type="button" class="chan-button" name="c_up>" value=">" title="Next Channel" onclick="javascript:f_chan_button(1);"></div>
-            </div>
-            <div class="s2_row">
-                <div class="s2_cell_a" style="display: none;"><span class="label">Talkgroup:</span></div>
-                <div class="s2_cell_b2" class="value" id="s2_tg">Waiting for data...</div>
-                <div class="s2_cell_h" id="s2_ch_cap" style="display:none;"><input type="button" class="cap-button" id="cap_bn" name="c_cap" value="start capture" title="Capture" onclick="javascript:f_cap_button(0);"></div>
-            </div>
-            <div class="s2_row">
-                <div class="s2_cell_a" style="display: none;"><span class="label">Group Addr:</span></div>
-                <div class="s2_cell_b2" class="value" id="s2_grp">&nbsp</div>
-                <div class="s2_cell_h" id="s2_ch_trk" style="display:none;"><input type="button" class="cap-button" id="trk_bn" name="c_trk" value="tracking" title="Tracking" onclick="javascript:f_trk_button(-1);"></div>
-            </div>
-            <div class="s2_row">
-                <div class="s2_cell_a" style="display: none;"><span class="label">Source Addr:</span></div>
-                <div class="s2_cell_b" class="value" id="s2_src"><span class="value">&nbsp</span></div>
-            </div>
+        <!-- Iframe Section -->
+        <div class="op25-iframe">
+            <iframe src="{{ iframe_target }}" id="op25-iframe" scrolling="no"></iframe>
         </div>
-
-    </div>
-        <div class="menu-bar" style="display: inline-flex;">
-            <button id="btn-hold" data-command="hold" onclick="f_scan_button('hold')">Hold</button>
-            <button id="btn-goto" data-command="goto" onclick="f_scan_button('goto')">Goto</button>
-            <button id="btn-whitelist" data-command="whitelist" onclick="f_scan_button('whitelist')">Whitelist</button>
-            <button id="btn-blacklist" data-command="blacklist" onclick="f_scan_button('lockout')">Blacklist</button>
-            <button id="btn-scan" data-command="scan" onclick="setTGIDAndListen('0')">Scan</button>
-    </div>
-    <br>
-    <details>
-        <summary>Details</summary>
-            <div class="menu-bar">
-              <button id="btn-tune-down" data-command="fine-tune-down" onclick="f_tune_button(-100)" title="Fine Tune -100">&lt;&lt;&lt;</button>
-              <button id="btn-tune-down" data-command="fine-tune-down" onclick="f_tune_button(-10)" title="Fine Tune -10">&lt;&lt;</button>
-              <button id="btn-tune-down" data-command="fine-tune-down" onclick="f_tune_button(-1)" title="Fine Tune -1">&lt;</button>
-              <button id="btn-tune-up" data-command="fine-tune-up" onclick="f_tune_button(1)" title="Fine Tune +1">></button>
-              <button id="btn-tune-up" data-command="fine-tune-up" onclick="f_tune_button(10)" title="Fine Tune +10">>></button>
-              <button id="btn-tune-up" data-command="fine-tune-up" onclick="f_tune_button(100)" title="Fine Tune +100">>>></button>
-            </div>
-            <div id="div_s1" class="s1">
-                 <!-- system freq -->
-                Waiting for data...
-            </div>
-            <br>
-            <!-- div_s3 -->
-            <div id="div_s3" class="s3">
-                <!-- adjacent sites -->
-            </div>
-
-            <div id="div_plot"></div>
-            <div id="div_about"></div>
-    </details>
-
-        <div id="div_debug"></div>
-            <img id="img0" style="display: none;">
-            <img id="img1" style="display: none;">
-            <img id="img2" style="display: none;">
-            <img id="img3" style="display: none;">
-            <img id="img4" style="display: none;">
-
 
         <!-- Audio Player Section -->
         <div class="audio-player">
@@ -528,7 +295,7 @@
         </div>
 
         <!-- Scan Button -->
-{#        <button class="scanbutton" onclick="setTGIDAndListen('0')">Scan</button>#}
+        <button class="scanbutton" onclick="setTGIDAndListen('0')">Scan</button>
         <div class="favorites-scanlist-grid">
             <!-- Favorites Section -->
             {% if favorites_tgids | default({}) %}
@@ -776,12 +543,6 @@
         console.log(`Jump to live edge interval set to ${seconds} seconds.`);
         if (isJumpToLiveEdgeEnabled) {
             startJumpToLiveEdgeInterval();
-        }
-    }
-
-    if (typeof do_onload !== "function") {
-        function do_onload() {
-            console.log("Fallback: Page Loaded");
         }
     }
 </script>
