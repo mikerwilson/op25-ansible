@@ -536,7 +536,7 @@
                 <h2>Favorites</h2>
                 {% for tgid, name in favorites_tgids.items() %}
                 <div>
-                    <button onclick="setTGIDAndListen('{{ tgid }}')">{{ name }}<br>({{ tgid }})</button>
+                    <button onclick="setTGIDAndListen('{{ tgid }}')">{{ name }}<br>{{ tgid }}</button>
                 </div>
                 {% endfor %}
             </div>
@@ -548,7 +548,7 @@
                 <h2>Scan List</h2>
                 {% for tgid, name in whitelisted_tgids.items() %}
                 <div>
-                    <button onclick="setTGIDAndListen('{{ tgid }}')">{{ name }}<br>({{ tgid }})</button>
+                    <button onclick="setTGIDAndListen('{{ tgid }}')">{{ name }}<br>{{ tgid }}</button>
                 </div>
                 {% endfor %}
             </div>
@@ -562,7 +562,7 @@
             <div class="favorites-scanlist-grid" id="talkgroupList">
                 {% for tgid, name in channels.items() %}
                 <div class="tgid-entry" data-tgid="{{ tgid }}" data-name="{{ name | lower }}">
-                    <button onclick="setTGIDAndListen('{{ tgid }}')">{{ name }}<br>({{ tgid }})</button>
+                    <button onclick="setTGIDAndListen('{{ tgid }}')">{{ name }}<br>{{ tgid }}</button>
                 </div>
                 {% endfor %}
             </div>
@@ -689,13 +689,16 @@
 
     const searchInput = document.getElementById('searchTalkgroups');
     const talkgroupList = document.getElementById('talkgroupList');
-    searchInput.addEventListener('input', function() {
+    searchInput.addEventListener('input', function () {
         const filter = searchInput.value.toLowerCase();
         const entries = talkgroupList.getElementsByClassName('tgid-entry');
+
         for (let i = 0; i < entries.length; i++) {
             const entry = entries[i];
-            const name = entry.getAttribute('data-name');
-            entry.style.display = name.includes(filter) ? '' : 'none';
+            const text = entry.textContent || entry.innerText; // Get all visible text, including multi-line content
+
+            // Check if the text includes the filter (case insensitive)
+            entry.style.display = text.toLowerCase().includes(filter) ? '' : 'none';
         }
     });
 
