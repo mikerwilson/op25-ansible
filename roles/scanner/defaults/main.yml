@@ -28,7 +28,8 @@ icecast_burst_on_connect: 0
 liquidsoap_bitrate: 16
 liquidsoap_samplerate: 22050
 liquidsoap_description: op25
-iframe_target: "http://{{op25_servername}}:{{op25_port}}/"
+audio_player_gain: '1.0'
+iframe_target: "http://{{op25_servername}}:{{op25_port}}"
 audio_stream: "http://{{icecast_servername}}:{{icecast_port}}/{{icecast_mountpoint}}"
 channels:
   '10005': EBRP PD1
