@@ -527,8 +527,6 @@
             <audio id="liveAudio" style="display:none;"></audio>
         </div>
 
-        <!-- Scan Button -->
-{#        <button class="scanbutton" onclick="setTGIDAndListen('0')">Scan</button>#}
         <div class="favorites-scanlist-grid">
             <!-- Favorites Section -->
             {% if favorites_tgids | default({}) %}
@@ -663,6 +661,20 @@
         const originalPrompt = window.prompt;
         window.prompt = function() { return tgid; };
         f_scan_button('goto');
+        window.prompt = originalPrompt;
+    }
+
+    function whitelistTGID(tgid) {
+        const originalPrompt = window.prompt;
+        window.prompt = function() { return tgid; };
+        f_scan_button('whitelist');
+        window.prompt = originalPrompt;
+    }
+
+    function blacklistTGID(tgid) {
+        const originalPrompt = window.prompt;
+        window.prompt = function() { return tgid; };
+        f_scan_button('blacklist');
         window.prompt = originalPrompt;
     }
 
