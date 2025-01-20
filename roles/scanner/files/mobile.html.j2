@@ -615,13 +615,25 @@
     </div>
 
 <script>
+    // Audio Player stuff
+    // Configurable lag threshold (in seconds)
+    const SHOW_LAG = true;
+    const LAG_THRESHOLD = 3;
+
+    const SHOW_LAG = true;
+    const LAG_THRESHOLD = 3;
+
     let mediaSource;
     let sourceBuffer;
     const audio = document.getElementById('liveAudio');
+    const streamUrlInput = document.getElementById('streamUrl');
+    const button = document.getElementById('streamButton');
+    const status = document.getElementById('status');
+    const timer = document.getElementById('timer');
     let timerInterval;
-    let jumpToLiveEdgeInterval;
-    let isJumpToLiveEdgeEnabled = false;
-    let jumpIntervalTime = 60000; // Default interval time (60 seconds)
+    let streamReader;
+    let connected = false;
+
 
     // Web Audio API variables
     let audioContext;

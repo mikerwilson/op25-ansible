@@ -89,22 +89,50 @@
             color: #000000;
             border-color: #ccc;
         }
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .slider-container label {
+            margin-bottom: 5px;
+        }
+
+        .audio-player {
+            text-align: center; /* Center all text within the component */
+        }
+
+        .status-container .status {
+            margin-bottom: 5px; /* Adjust spacing between status elements */
+            font-size: 14px; /* Optional: Adjust font size */
+        }
     </style>
 </head>
 <body>
     <button class="day-night-toggle" onclick="toggleTheme()">Day/Night Mode</button>
     <div class="audio-player">
         <input type="text" class="url-input" id="streamUrl" placeholder="Enter stream URL" />
-        <p class="status" id="status">Status: Not playing</p>
-        <p class="status" id="timer">--:--</p>
+        <div class="status-container">
+            <div class="status" id="status">Status: Not playing</div>
+            <div class="status" id="lag">&nbsp;</div>
+            <div class="status" id="timer">--:--</div>
+        </div>
+        <div class="slider-container">
+            <label for="gainSlider">Volume:</label>
+            <input type="range" id="gainSlider" min="0" max="2" step="0.1" value="1.0" />
+        </div>
         <button class="stream-start-stop" id="streamButton" onclick="toggleIcecastStream()">Start Stream</button>
         <audio id="liveAudio" style="display:none;"></audio>
     </div>
 
+
 <script>
-    // Configurable lag threshold (in seconds)
+    // Configurable constants
     const SHOW_LAG = true;
-    const LAG_THRESHOLD = 3;
+    const LAG_THRESHOLD = 3; // Lag threshold in seconds
+    const DEFAULT_GAIN = 2.0; // Default audio gain (2.0 = double the normal volume)
 
     let mediaSource;
     let sourceBuffer;
@@ -113,15 +141,22 @@
     const button = document.getElementById('streamButton');
     const status = document.getElementById('status');
     const timer = document.getElementById('timer');
+    const gainSlider = document.getElementById('gainSlider');
     let timerInterval;
     let streamReader;
     let connected = false;
 
-    // Load URL from localStorage or URL parameter
+    // Web Audio API components
+    let audioContext = null;
+    let gainNode = null;
+    let audioSource = null;
+
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
         const savedUrl = localStorage.getItem('streamUrl');
         const paramUrl = urlParams.get('url');
+
+        // Restore saved URL
         if (paramUrl) {
             streamUrlInput.value = paramUrl;
         } else if (savedUrl) {
@@ -129,10 +164,33 @@
         }
     };
 
-    // Save URL to localStorage on input change
-    streamUrlInput.addEventListener('input', function() {
-        localStorage.setItem('streamUrl', streamUrlInput.value);
-    });
+    function setupAudioGain() {
+        if (!audioContext) {
+            // Initialize Web Audio API only after user interaction
+            audioContext = new AudioContext();
+            gainNode = audioContext.createGain();
+            audioSource = audioContext.createMediaElementSource(audio);
+
+            // Connect the nodes
+            audioSource.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            // Restore saved gain value or use the default
+            const savedGain = localStorage.getItem('audioGain');
+            const initialGain = savedGain ? parseFloat(savedGain) : DEFAULT_GAIN;
+            gainNode.gain.value = initialGain;
+
+            // Update slider position to reflect the current gain
+            gainSlider.value = initialGain;
+
+            // Update gain dynamically and save to localStorage
+            gainSlider.addEventListener('input', () => {
+                const newGain = parseFloat(gainSlider.value);
+                gainNode.gain.value = newGain;
+                localStorage.setItem('audioGain', newGain);
+            });
+        }
+    }
 
     async function toggleIcecastStream() {
         const streamUrl = streamUrlInput.value;
@@ -147,8 +205,11 @@
             return;
         }
 
+        // Initialize AudioContext and setup gain after user interaction
+        setupAudioGain();
+
         try {
-            status.textContent = 'Status: Connecting...';
+            status.textContent = 'Status: Connecting...\n'; // Add single newline after status
             mediaSource = new MediaSource();
             audio.src = URL.createObjectURL(mediaSource);
 
@@ -159,7 +220,7 @@
                     if (!response.ok) throw new Error('Failed to connect to the stream.');
                     streamReader = response.body.getReader();
                     connected = true;
-                    status.textContent = 'Status: Connected';
+                    status.textContent = 'Status: Connected\n'; // Add single newline after status
                     startStream();
                 } catch (err) {
                     handleError(err.message || 'Unknown error while connecting to stream.');
@@ -196,14 +257,21 @@
     }
 
     function stopStream(message = 'Stream stopped.') {
-        clearInterval(timerInterval);
+        clearInterval(timerInterval); // Clear timer interval
+        clearInterval(lagInterval); // Clear lag interval
         connected = false;
+
         if (streamReader) streamReader.cancel();
         if (audio) audio.pause();
         button.textContent = 'Start Stream';
         button.classList.remove('playing');
         status.textContent = `Status: ${message}`;
-        timer.textContent = '--:--';
+
+        // Clear lag text
+        const lagElement = document.getElementById('lag');
+        if (lagElement) {
+            lagElement.textContent = '\u00A0'; // Reset lag element to a non-breaking space
+        }
     }
 
     function handleError(message) {
@@ -224,20 +292,19 @@
     function trackLag() {
         if (!SHOW_LAG) return; // Exit if lag tracking is disabled
 
-        const lagElement = document.createElement('p');
-        lagElement.classList.add('status');
-        lagElement.id = 'lag';
-        lagElement.textContent = 'Lag: Calculating...';
-        status.after(lagElement);
+        const lagElement = document.getElementById('lag'); // Reference the existing lag element
 
-        setInterval(() => {
+        lagInterval = setInterval(() => {
             if (audio.buffered.length > 0) {
                 // Calculate lag as the difference between the end of the buffer and the current playback position
                 const bufferedEnd = audio.buffered.end(audio.buffered.length - 1);
                 const lag = bufferedEnd - audio.currentTime;
 
+                // Ensure status displays correctly
+                status.textContent = `Status: Connected`;
+
                 // Update lag message
-                lagElement.textContent = `Lag: ${lag.toFixed(2)} seconds`;
+                lagElement.textContent = `Lag: ${lag.toFixed(2)} secs`;
 
                 // Automatically jump to end if lag exceeds threshold
                 if (lag > LAG_THRESHOLD) {
@@ -245,6 +312,7 @@
                     lagElement.textContent += ' (Jumped to live)';
                 }
             } else if (connected) {
+                status.textContent = `Status: Connected`;
                 lagElement.textContent = 'Lag: Calculating...';
             }
         }, 1000); // Update every second
@@ -262,6 +330,7 @@
         document.body.classList.add('light-mode');
     }
 </script>
+
 
 </body>
 </html>
