@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio Player</title>
     <style>
+        /* General body styling */
         body {
             font-family: Arial, sans-serif;
             background-color: #121212;
@@ -14,59 +15,82 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            height: 100vh;
             justify-content: center;
+            height: 100vh;
             transition: background-color 0.3s, color 0.3s;
         }
+
+        /* Audio player container */
         .audio-player {
             display: flex;
             flex-direction: column;
             align-items: center;
             background-color: #1e1e1e;
-            border-radius: 5px;
             border: 1px solid #333;
+            border-radius: 5px;
             padding: 20px;
             width: 300px;
+            text-align: center;
         }
-        .status {
-            font-size: 18px;
+
+        /* Status and timers */
+        .status-container .status {
             margin-bottom: 10px;
+            font-size: 18px;
+        }
+        #timer {
+            font-size: 14px;
+            margin-top: -5px;
+        }
+
+        /* Input styling */
+        .url-input,
+        .slider-container input[type="range"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .url-input {
+            margin-bottom: 10px;
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+
+        /* Light mode input overrides */
+        .light-mode .url-input,
+        .light-mode input[type="range"] {
+            background-color: #f9f9f9;
+            color: #000000;
+            border-color: #ccc;
+        }
+
+        /* Buttons */
+        button {
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
         .stream-start-stop {
             padding: 12px 24px;
+            margin-bottom: 10px;
+            font-size: 20px;
             background-color: #1d7831;
             color: #ffffff;
-            border: none;
-            border-radius: 5px;
-            font-size: 20px;
-            cursor: pointer;
-            margin-bottom: 10px;
         }
         .stream-start-stop.playing {
             background-color: #9a2631;
         }
-        .stream-start-stop:hover {
+        .stream-start-stop:hover,
+        .day-night-toggle:hover {
             opacity: 0.9;
         }
         .day-night-toggle {
             background-color: #007bff;
             color: #fff;
-            border: none;
             padding: 10px 24px;
-            border-radius: 5px;
             font-size: 16px;
-            cursor: pointer;
-        }
-        .day-night-toggle:hover {
-            background-color: #0056b3;
-        }
-        .light-mode {
-            background-color: #ffffff;
-            color: #000000;
-        }
-        .light-mode .audio-player {
-            background-color: #f9f9f9;
-            border-color: #ccc;
         }
         .light-mode .stream-start-stop {
             background-color: #35cd59;
@@ -74,21 +98,11 @@
         .light-mode .stream-start-stop.playing {
             background-color: #dc3545;
         }
-        .url-input {
-            margin-bottom: 10px;
-            padding: 10px;
-            width: 100%;
-            border: 1px solid #333;
-            border-radius: 5px;
-            background-color: #1e1e1e;
-            color: #ffffff;
-            font-size: 16px;
+        .light-mode .day-night-toggle {
+            background-color: #0056b3;
         }
-        .light-mode .url-input {
-            background-color: #f9f9f9;
-            color: #000000;
-            border-color: #ccc;
-        }
+
+        /* Slider container styling */
         .slider-container {
             display: flex;
             flex-direction: column;
@@ -100,14 +114,16 @@
             margin-bottom: 5px;
         }
 
-        .audio-player {
-            text-align: center; /* Center all text within the component */
+        /* Light mode overrides */
+        .light-mode {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .light-mode .audio-player {
+            background-color: #f9f9f9;
+            border-color: #ccc;
         }
 
-        .status-container .status {
-            margin-bottom: 5px; /* Adjust spacing between status elements */
-            font-size: 14px; /* Optional: Adjust font size */
-        }
     </style>
 </head>
 <body>

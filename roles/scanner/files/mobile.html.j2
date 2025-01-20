@@ -557,8 +557,15 @@
 
         <!-- Audio Player Section -->
         <div class="audio-player">
-            <p class="status" id="status">Status: Not playing</p>
-            <p class="status" id="timer">--:--</p>
+            <div class="status-container">
+                <div class="status" id="status">Status: Not playing</div>
+                <div class="status" id="lag">&nbsp;</div>
+                <div class="status" id="timer">--:--</div>
+            </div>
+            <div class="slider-container">
+                <label for="gainSlider">Volume:</label>
+                <input type="range" id="gainSlider" min="0" max="2" step="0.1" value="1.0" />
+            </div>
             <button class="stream-start-stop" id="streamButton" onclick="toggleIcecastStream('{{ audio_stream }}')">Start Stream</button>
             <audio id="liveAudio" style="display:none;"></audio>
         </div>
@@ -619,9 +626,8 @@
     // Configurable lag threshold (in seconds)
     const SHOW_LAG = true;
     const LAG_THRESHOLD = 3;
+    const DEFAULT_GAIN = {{ audio_player_gain }}; // Default audio gain (2.0 = double the normal volume)
 
-    const SHOW_LAG = true;
-    const LAG_THRESHOLD = 3;
 
     let mediaSource;
     let sourceBuffer;
@@ -636,86 +642,164 @@
 
 
     // Web Audio API variables
-    let audioContext;
-    let gainNode;
-    let gainValue = {{ audio_player_gain }}; // Configurable gain value
+    let audioContext = null;
+    let gainNode = null;
+    let audioSource = null;
+
+    function setupAudioGain() {
+        if (!audioContext) {
+            // Initialize Web Audio API only after user interaction
+            audioContext = new AudioContext();
+            gainNode = audioContext.createGain();
+            audioSource = audioContext.createMediaElementSource(audio);
+
+            // Connect the nodes
+            audioSource.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            // Restore saved gain value or use the default
+            const savedGain = localStorage.getItem('audioGain');
+            const initialGain = savedGain ? parseFloat(savedGain) : DEFAULT_GAIN;
+            gainNode.gain.value = initialGain;
+
+            // Update slider position to reflect the current gain
+            gainSlider.value = initialGain;
+
+            // Update gain dynamically and save to localStorage
+            gainSlider.addEventListener('input', () => {
+                const newGain = parseFloat(gainSlider.value);
+                gainNode.gain.value = newGain;
+                localStorage.setItem('audioGain', newGain);
+            });
+        }
+    }
 
     async function toggleIcecastStream(url) {
-        const button = document.getElementById('streamButton');
-        const status = document.getElementById('status');
-        const timer = document.getElementById('timer');
+        const streamUrl = url;
 
-        if (button.classList.contains('playing')) {
-            clearInterval(timerInterval);
-            clearInterval(jumpToLiveEdgeInterval);
-            audio.pause();
-            button.textContent = 'Start Stream';
-            button.classList.remove('playing');
-            status.textContent = 'Status: Not playing';
-            timer.textContent = '--:--';
+        if (!streamUrl) {
+            alert('Invalid stream URL.  Please check config.');
             return;
         }
 
+        if (button.classList.contains('playing')) {
+            stopStream();
+            return;
+        }
+
+        // Initialize AudioContext and setup gain after user interaction
+        setupAudioGain();
+
         try {
-            status.textContent = 'Status: Connecting...';
+            status.textContent = 'Status: Connecting...\n'; // Add single newline after status
             mediaSource = new MediaSource();
             audio.src = URL.createObjectURL(mediaSource);
 
             mediaSource.addEventListener('sourceopen', async () => {
-                sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
-                const response = await fetch(url);
-                const reader = response.body.getReader();
-
-                async function read() {
-                    const { done, value } = await reader.read();
-                    if (done) {
-                        mediaSource.endOfStream();
-                        return;
-                    }
-                    sourceBuffer.appendBuffer(value);
-                    await read();
+                try {
+                    sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
+                    const response = await fetch(streamUrl);
+                    if (!response.ok) throw new Error('Failed to connect to the stream.');
+                    streamReader = response.body.getReader();
+                    connected = true;
+                    status.textContent = 'Status: Connected\n'; // Add single newline after status
+                    startStream();
+                } catch (err) {
+                    handleError(err.message || 'Unknown error while connecting to stream.');
                 }
-                await read();
             });
 
-            // Initialize Web Audio API when the stream starts
-            initializeAudioContext();
-
-            audio.play();
-            button.textContent = 'Stop Stream';
-            button.classList.add('playing');
-            status.textContent = 'Status: Playing';
-            startTimer(timer);
-
-            if (isJumpToLiveEdgeEnabled) {
-                startJumpToLiveEdgeInterval();
-            }
         } catch (error) {
-            status.textContent = 'Status: Error - ' + error.message;
-            console.error('Error playing Icecast stream:', error);
+            handleError(error.message || 'Error initializing MediaSource.');
         }
     }
 
-    function initializeAudioContext() {
-        if (!audioContext) {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const audioSource = audioContext.createMediaElementSource(audio);
-            gainNode = audioContext.createGain();
-            gainNode.gain.value = gainValue; // Use configurable gain value
-            audioSource.connect(gainNode).connect(audioContext.destination);
+    async function readStream() {
+        try {
+            while (connected) {
+                const { done, value } = await streamReader.read();
+                if (done) {
+                    stopStream('Stream disconnected.');
+                    break;
+                }
+                sourceBuffer.appendBuffer(value);
+            }
+        } catch (err) {
+            handleError('Error reading stream data.');
         }
     }
 
-    function startTimer(timerElement) {
+    function stopStream(message = 'Stream stopped.') {
+        clearInterval(timerInterval); // Clear timer interval
+        clearInterval(lagInterval); // Clear lag interval
+        connected = false;
+
+        if (streamReader) streamReader.cancel();
+        if (audio) audio.pause();
+        button.textContent = 'Start Stream';
+        button.classList.remove('playing');
+        status.textContent = `Status: ${message}`;
+
+        // Clear lag text
+        const lagElement = document.getElementById('lag');
+        if (lagElement) {
+            lagElement.textContent = '\u00A0'; // Reset lag element to a non-breaking space
+        }
+    }
+
+    function handleError(message) {
+        stopStream(`Error: ${message}`);
+        console.error(message);
+    }
+
+    async function startStream() {
+        button.textContent = 'Stop Stream';
+        button.classList.add('playing');
+        audio.play();
+        startTimer();
+        trackLag(); // Start tracking lag if SHOW_LAG is true
+        readStream();
+    }
+
+    function startTimer() {
         let seconds = 0;
         timerInterval = setInterval(() => {
             seconds++;
             const minutes = String(Math.floor(seconds / 60)).padStart(2, '0');
             const secs = String(seconds % 60).padStart(2, '0');
-            timerElement.textContent = `${minutes}:${secs}`;
+            timer.textContent = `${minutes}:${secs}`;
         }, 1000);
     }
 
+    function trackLag() {
+        if (!SHOW_LAG) return; // Exit if lag tracking is disabled
+
+        const lagElement = document.getElementById('lag'); // Reference the existing lag element
+
+        lagInterval = setInterval(() => {
+            if (audio.buffered.length > 0) {
+                // Calculate lag as the difference between the end of the buffer and the current playback position
+                const bufferedEnd = audio.buffered.end(audio.buffered.length - 1);
+                const lag = bufferedEnd - audio.currentTime;
+
+                // Ensure status displays correctly
+                status.textContent = `Status: Connected`;
+
+                // Update lag message
+                lagElement.textContent = `Lag: ${lag.toFixed(2)} secs`;
+
+                // Automatically jump to end if lag exceeds threshold
+                if (lag > LAG_THRESHOLD) {
+                    audio.currentTime = bufferedEnd;
+                    lagElement.textContent += ' (Jumped to live)';
+                }
+            } else if (connected) {
+                status.textContent = `Status: Connected`;
+                lagElement.textContent = 'Lag: Calculating...';
+            }
+        }, 1000); // Update every second
+    }
+    
     function setTGIDAndListen(tgid) {
         const originalPrompt = window.prompt;
         window.prompt = function() { return tgid; };
