@@ -388,4 +388,4 @@
     owner: "{{ op25_user }}"
     group: "{{ op25_user }}"
     mode: '0644'
-  tags: configs
+  tags: configs, mobile

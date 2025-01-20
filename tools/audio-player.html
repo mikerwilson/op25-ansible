@@ -102,107 +102,132 @@
     </div>
 
     <script>
-        // Example URL: https://yourdomain.com/audio-player.html?url=https://example.com/stream
+    let mediaSource;
+    let sourceBuffer;
+    const audio = document.getElementById('liveAudio');
+    const streamUrlInput = document.getElementById('streamUrl');
+    const button = document.getElementById('streamButton');
+    const status = document.getElementById('status');
+    const timer = document.getElementById('timer');
+    let timerInterval;
+    let streamReader;
+    let connected = false;
 
-        let mediaSource;
-        let sourceBuffer;
-        const audio = document.getElementById('liveAudio');
-        const streamUrlInput = document.getElementById('streamUrl');
-        let timerInterval;
+    // Load URL from localStorage or URL parameter
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const savedUrl = localStorage.getItem('streamUrl');
+        const paramUrl = urlParams.get('url');
+        if (paramUrl) {
+            streamUrlInput.value = paramUrl;
+        } else if (savedUrl) {
+            streamUrlInput.value = savedUrl;
+        }
+    };
 
-        // Load URL from localStorage or URL parameter
-        window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const savedUrl = localStorage.getItem('streamUrl');
-            const paramUrl = urlParams.get('url');
-            if (paramUrl) {
-                streamUrlInput.value = paramUrl;
-            } else if (savedUrl) {
-                streamUrlInput.value = savedUrl;
-            }
-        };
+    // Save URL to localStorage on input change
+    streamUrlInput.addEventListener('input', function() {
+        localStorage.setItem('streamUrl', streamUrlInput.value);
+    });
 
-        // Save URL to localStorage on input change
-        streamUrlInput.addEventListener('input', function() {
-            localStorage.setItem('streamUrl', streamUrlInput.value);
-        });
+    async function toggleIcecastStream() {
+        const streamUrl = streamUrlInput.value;
 
-        async function toggleIcecastStream() {
-            const button = document.getElementById('streamButton');
-            const status = document.getElementById('status');
-            const timer = document.getElementById('timer');
-            const streamUrl = streamUrlInput.value;
+        if (!streamUrl) {
+            alert('Please enter a valid stream URL.');
+            return;
+        }
 
-            if (!streamUrl) {
-                alert('Please enter a valid stream URL.');
-                return;
-            }
+        if (button.classList.contains('playing')) {
+            stopStream();
+            return;
+        }
 
-            if (button.classList.contains('playing')) {
-                clearInterval(timerInterval);
-                audio.pause();
-                button.textContent = 'Start Stream';
-                button.classList.remove('playing');
-                status.textContent = 'Status: Not playing';
-                timer.textContent = '--:--';
-                return;
-            }
+        try {
+            status.textContent = 'Status: Connecting...';
+            mediaSource = new MediaSource();
+            audio.src = URL.createObjectURL(mediaSource);
 
-            try {
-                status.textContent = 'Status: Connecting...';
-                mediaSource = new MediaSource();
-                audio.src = URL.createObjectURL(mediaSource);
-
-                mediaSource.addEventListener('sourceopen', async () => {
+            mediaSource.addEventListener('sourceopen', async () => {
+                try {
                     sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
                     const response = await fetch(streamUrl);
-                    const reader = response.body.getReader();
+                    if (!response.ok) throw new Error('Failed to connect to the stream.');
+                    streamReader = response.body.getReader();
+                    connected = true;
+                    status.textContent = 'Status: Connected';
+                    startStream();
+                } catch (err) {
+                    handleError(err.message || 'Unknown error while connecting to stream.');
+                }
+            });
 
-                    async function read() {
-                        const { done, value } = await reader.read();
-                        if (done) {
-                            mediaSource.endOfStream();
-                            return;
-                        }
-                        sourceBuffer.appendBuffer(value);
-                        await read();
-                    }
-                    await read();
-                });
+        } catch (error) {
+            handleError(error.message || 'Error initializing MediaSource.');
+        }
+    }
 
-                audio.play();
-                button.textContent = 'Stop Stream';
-                button.classList.add('playing');
-                status.textContent = 'Status: Playing';
-                startTimer(timer);
+    async function startStream() {
+        button.textContent = 'Stop Stream';
+        button.classList.add('playing');
+        audio.play();
+        startTimer();
+        readStream();
+    }
 
-            } catch (error) {
-                status.textContent = 'Status: Error - ' + error.message;
-                console.error('Error playing Icecast stream:', error);
+    async function readStream() {
+        try {
+            while (connected) {
+                const { done, value } = await streamReader.read();
+                if (done) {
+                    stopStream('Stream disconnected.');
+                    break;
+                }
+                sourceBuffer.appendBuffer(value);
             }
+        } catch (err) {
+            handleError('Error reading stream data.');
         }
+    }
 
-        function startTimer(timerElement) {
-            let seconds = 0;
-            timerInterval = setInterval(() => {
-                seconds++;
-                const minutes = String(Math.floor(seconds / 60)).padStart(2, '0');
-                const secs = String(seconds % 60).padStart(2, '0');
-                timerElement.textContent = `${minutes}:${secs}`;
-            }, 1000);
-        }
+    function stopStream(message = 'Stream stopped.') {
+        clearInterval(timerInterval);
+        connected = false;
+        if (streamReader) streamReader.cancel();
+        if (audio) audio.stop;
+        button.textContent = 'Start Stream';
+        button.classList.remove('playing');
+        status.textContent = `Status: ${message}`;
+        timer.textContent = '--:--';
+    }
 
-        function toggleTheme() {
-            document.body.classList.toggle('light-mode');
-        }
+    function handleError(message) {
+        stopStream(`Error: ${message}`);
+        console.error(message);
+    }
 
-        // Automatically set theme based on system preference
-        const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
-        if (prefersDarkScheme.matches) {
-            document.body.classList.remove('light-mode');
-        } else {
-            document.body.classList.add('light-mode');
-        }
-    </script>
+    function startTimer() {
+        let seconds = 0;
+        timerInterval = setInterval(() => {
+            seconds++;
+            const minutes = String(Math.floor(seconds / 60)).padStart(2, '0');
+            const secs = String(seconds % 60).padStart(2, '0');
+            timer.textContent = `${minutes}:${secs}`;
+        }, 1000);
+    }
+
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+    }
+
+    // Automatically set theme based on system preference
+    const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+    if (prefersDarkScheme.matches) {
+        document.body.classList.remove('light-mode');
+    } else {
+        document.body.classList.add('light-mode');
+    }
+</script>
+
 </body>
 </html>
