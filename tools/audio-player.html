@@ -101,7 +101,11 @@
         <audio id="liveAudio" style="display:none;"></audio>
     </div>
 
-    <script>
+<script>
+    // Configurable lag threshold (in seconds)
+    const SHOW_LAG = true;
+    const LAG_THRESHOLD = 3;
+
     let mediaSource;
     let sourceBuffer;
     const audio = document.getElementById('liveAudio');
@@ -172,6 +176,7 @@
         button.classList.add('playing');
         audio.play();
         startTimer();
+        trackLag(); // Start tracking lag if SHOW_LAG is true
         readStream();
     }
 
@@ -194,7 +199,7 @@
         clearInterval(timerInterval);
         connected = false;
         if (streamReader) streamReader.cancel();
-        if (audio) audio.stop;
+        if (audio) audio.pause();
         button.textContent = 'Start Stream';
         button.classList.remove('playing');
         status.textContent = `Status: ${message}`;
@@ -214,6 +219,35 @@
             const secs = String(seconds % 60).padStart(2, '0');
             timer.textContent = `${minutes}:${secs}`;
         }, 1000);
+    }
+
+    function trackLag() {
+        if (!SHOW_LAG) return; // Exit if lag tracking is disabled
+
+        const lagElement = document.createElement('p');
+        lagElement.classList.add('status');
+        lagElement.id = 'lag';
+        lagElement.textContent = 'Lag: Calculating...';
+        status.after(lagElement);
+
+        setInterval(() => {
+            if (audio.buffered.length > 0) {
+                // Calculate lag as the difference between the end of the buffer and the current playback position
+                const bufferedEnd = audio.buffered.end(audio.buffered.length - 1);
+                const lag = bufferedEnd - audio.currentTime;
+
+                // Update lag message
+                lagElement.textContent = `Lag: ${lag.toFixed(2)} seconds`;
+
+                // Automatically jump to end if lag exceeds threshold
+                if (lag > LAG_THRESHOLD) {
+                    audio.currentTime = bufferedEnd;
+                    lagElement.textContent += ' (Jumped to live)';
+                }
+            } else if (connected) {
+                lagElement.textContent = 'Lag: Calculating...';
+            }
+        }, 1000); // Update every second
     }
 
     function toggleTheme() {
